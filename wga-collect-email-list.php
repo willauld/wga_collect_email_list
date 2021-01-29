@@ -243,7 +243,7 @@ function wga_html_form_code($inpopup) {
 		echo '  margin: 1em 0;'.PHP_EOL;
 		echo '  padding 1em;'.PHP_EOL;
 		echo '  border: 1px solid #ccc;'.PHP_EOL;
-		echo '  background: #f8f8f8;'.PHP_EOL;
+		echo '  background: #3cb5e8;'.PHP_EOL; //#f8f8f8;'.PHP_EOL;
 		//echo '  font-size:0.75em;'.PHP_EOL;
 		//echo '  display: inline-block;'.PHP_EOL;
 		echo '  width: 33em;'.PHP_EOL;
