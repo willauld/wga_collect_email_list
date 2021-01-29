@@ -17,6 +17,9 @@ Author URI: http://w3guy.com
 Also used the following two articles:
 - https://premium.wpmudev.org/blog/activate-deactivate-uninstall-hooks/
 - https://premium.wpmudev.org/blog/creating-database-tables-for-plugins/
+-https://www.copernica.com/en/blog/post/how-to-create-email-buttons-with-just-html-and-css
+- https://code.tutsplus.com/tutorials/how-to-implement-email-verification-for-new-members--net-3824
+- 
 
 */
 
@@ -82,13 +85,11 @@ function wga_db_table_install() {
 		last_name varchar(50),
 		email varchar(50) NOT NULL,
 		source varchar(50),
-		ip_address varchar(50),
-		status varchar(50),
 		unsubscribed tinyint(1) DEFAULT 0 NOT NULL,
 		created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
 		updated_at datetime,
 		is_verified tinyint(1) DEFAULT 0,
-		is_deliverable tinyint(1) DEFAULT 0,
+        vhash varchar(32) NOT NULL,
 		UNIQUE KEY id (id)
 	) $charset_collate;";
 
@@ -215,9 +216,9 @@ function wga_html_form_code($inpopup) {
 		
 		$_POST['post_handled'] = true;
 		
-		if ($inpopup == true) {
-		  echo '<h2>Thank you!</h2>';
-		}
+		//if ($inpopup == true) {
+		  echo '<h2>Thank you!</h2><br>Please verify your email address by clicking the activation link that has been send to your email.';
+		//}
 		echo '<script>'.PHP_EOL;
 		echo 'if ( window.history.replaceState ) {'.PHP_EOL;
 		echo '	window.history.replaceState( null, null, window.location.href );'.PHP_EOL;
@@ -324,7 +325,8 @@ function wga_test_input($data) {
 }
 
 function wga_process_input($name, $email) {
-	global $wpdb;
+    global $wpdb;
+    $source = "?";
 	
 	$a = explode(" ", $name, 2);
 	$first_name = $a[0];
@@ -332,7 +334,9 @@ function wga_process_input($name, $email) {
 	//
 	// Add db record
 	//
-	$created_at = current_time( 'mysql' );
+    $created_at = current_time( 'mysql' );
+    $hash = md5( rand(0,1000) ); // Generate random 32 character hash
+    // Example output: f4552671f8909587cf485ea990207f3b
 
 	$table_name = $wpdb->prefix . 'wga_contact_list';
 	$wpdb->insert( 
@@ -340,22 +344,56 @@ function wga_process_input($name, $email) {
 		array( 
 			'first_name' => $first_name, 
 			'last_name' => $last_name, 
-			'email' => $email,
-			'created_at' => $created_at,
+            'email' => $email,
+            'source' => $source,
+            'created_at' => $created_at,
+            'vhash' => $hash, 
 		) 
 	);
 	//
 	// Send HTML mail to:
 	//
-	$subject = "Join Oregon Open Primaries"; // sanitize_text_field( $_POST["cf-subject"] );
+	$subject = "Confirm subscription to Oregon Open Primaries"; // sanitize_text_field( $_POST["cf-subject"] );
 
 	// get the blog administrator's email address
 	//$to = get_option( 'admin_email' );
 	
-	// test code
-	$message = "<b>This is HTML message.</b>";
-	$message .= "<h1>This is headline.</h1>";
-	$message .= $name . " has submitted " . $email . " for the email list"; // esc_textarea( $_POST["cf-message"] );
+    // test code - button code generated at: https://buttons.cm/
+    $message = '<html>
+                    <head>
+                        <style type=“text/css”>
+                        </style>
+                    </head>
+                    <body>
+                        <img width="600" src="https://staging2.williama18.sg-host.com/wp-content/uploads/2020/12/LogoOregonOpenPrimaries.png" alt="Let ALL voters vote!"/><br><br>
+                        <br><br>
+                        <br>' .
+                        $name . ',<br>
+                        Please click the following to verify your email address:
+                        <table width="100%" cellspacing="50" cellpadding="0">
+                            <tr>
+                                <td><td>
+                        <div><!--[if mso]>
+                            <v:roundrect            xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="https://forms.test/verify.php?email='.$email.'&vhash='.$hash.'" style="height:50px;v-text-anchor:middle;width:350px;" arcsize="8%" strokecolor="#262661" fillcolor="#262661">
+                                <w:anchorlock/>
+                                <center style="color:#FFEA0F;font-family:sans-serif;font-size:13px;font-weight:bold;">
+                                    Yes, subscribe me to Oregon Open Primaries!
+                                </center>
+                            </v:roundrect>
+                            <![endif]--><a href="https://buttons.cm/"
+                                style="background-color:#262661;border:1px solid #262661;border-radius:4px;color:#FFEA0F;display:inline-block;font-family:sans-serif;font-size:13px;font-weight:bold;line-height:50px;text-align:center;text-decoration:none;width:350px;-webkit-text-size-adjust:none;mso-hide:all;">
+                                    Yes, subscribe me to Oregon Open Primaries!
+                                </a>
+                        </div>
+                                </td></td>
+                            </tr>
+                        </table>
+                        Thanks <br>
+                        <br>
+                        Adding "' .$email. '" to email list. <br>
+                        <br>
+                    </body>
+                </html>';
 	 
 	$to = "$name <$email>";
 	//$headers = "From: $name <$email>" . "\r\n";
