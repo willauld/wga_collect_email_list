@@ -70,7 +70,7 @@ function wga_collect_email_list_activation() {
 	// C:\laragon\www\wp2\wp-content\plugins
 	$filename = __DIR__.'/scripts/verify.php';
 	$dest1dir = __DIR__.'/../../../';
-	$destfile = $dest1dir.'verify.php';
+    $destfile = $dest1dir.'verify.php';
 
 	if (!file_exists($filename)) {
     	wp_die("Could not activate\nThe file $filename does not exist");
@@ -80,7 +80,7 @@ function wga_collect_email_list_activation() {
 	}
 	if (!copy($filename, $destfile)) {
     	wp_die("Could not activate\nThe file $filename could not be copied");
-	}
+    }
 }
 
 global $wga_db_version;
@@ -157,14 +157,11 @@ function wga_install_data() {
 
 register_deactivation_hook( __FILE__, 'wga_collect_email_list_deactivation' );
 function wga_collect_email_list_deactivation() { // TESTME echos are not displayed!
-	echo 'in deactivation code'.PHP_EOL;
 	if ( ! current_user_can( 'activate_plugins' ) ) {
 		return;
 	}
-	echo 'past first check'.PHP_EOL;
 	$plugin = isset( $_REQUEST['plugin'] ) ? $_REQUEST['plugin'] : '';
 	check_admin_referer( "deactivate-plugin_{$plugin}" );
-	echo 'past second check'.PHP_EOL;
 	
   	// Deactivation rules here
 	$dest1dir = __DIR__.'/../../../';
@@ -176,7 +173,6 @@ function wga_collect_email_list_deactivation() { // TESTME echos are not display
 	if (!unlink($destfile)) {
     	wp_die("Could not deactivate\nThe file $destfile could not be removed");
 	}
-  echo 'Reached end of deactivation function'.PHP_EOL;
 }
 
 //
