@@ -66,7 +66,25 @@ function wga_collect_email_list_activation() {
 			)
 			. '</p> <a href="' . admin_url( 'plugins.php' ) . '">' . __( 'go back', 'wga_collect_email_list' ) . '</a>'
 		);
-	}
+    }
+    // cwd  = C:\laragon\www\forms\wp-admin
+    // targ = C:\laragon\www\forms\wp-content\plugins\wga-collect-email-list
+    $fn = '../wp-content/plugins/wga-collect-email-list/scripts/verify.php';    
+    $newfn = '../wp-includes/wga-verify.php'; 
+    /*
+    if(file_exists($fn)){
+        echo sprintf('file %s exists',$fn);
+    }else{
+        echo sprintf('file %s does not exist',$fn);
+    }*/
+    if(!copy($fn,$newfn)) {
+		wp_die(
+			'<p>' .
+			sprintf(
+                __( 'This plugin can not be activated because it failed to copy the verify.php file to its active home.')
+			).'</p>'.getcwd()
+		);
+    }
 }
 
 global $wga_db_version;
@@ -152,8 +170,13 @@ function wga_collect_email_list_deactivation() { // TESTME echos are not display
 	check_admin_referer( "deactivate-plugin_{$plugin}" );
 	echo 'past second check'.PHP_EOL;
 	
-  // Deactivation rules here
-  echo 'Reached end of deactivation function'.PHP_EOL;
+    // Deactivation rules here
+    // cwd  = C:\laragon\www\forms\wp-admin
+    // targ = C:\laragon\www\forms\wp-content\plugins\wga-collect-email-list
+    $oldfn = '../verify.php'; 
+    if (!unlink($oldfn)) {
+        wp_die( '<p>' . $oldfn . ' was not removed properly.</p>working directory: '.getcwd() );
+    };
 }
 
 //
@@ -374,13 +397,13 @@ function wga_process_input($name, $email) {
                             <tr>
                                 <td><td>
                         <div><!--[if mso]>
-                            <v:roundrect            xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="https://forms.test/verify.php?email='.$email.'&vhash='.$hash.'" style="height:50px;v-text-anchor:middle;width:350px;" arcsize="8%" strokecolor="#262661" fillcolor="#262661">
+                            <v:roundrect            xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="'.site_url().'/verify.php?email='.$email.'&vhash='.$hash.'" style="height:50px;v-text-anchor:middle;width:350px;" arcsize="8%" strokecolor="#262661" fillcolor="#262661">
                                 <w:anchorlock/>
                                 <center style="color:#FFEA0F;font-family:sans-serif;font-size:13px;font-weight:bold;">
                                     Yes, subscribe me to Oregon Open Primaries!
                                 </center>
                             </v:roundrect>
-                            <![endif]--><a href="https://buttons.cm/"
+                            <![endif]--><a href="'.site_url().'/verify.php?email='.$email.'&vhash='.$hash.'" 
                                 style="background-color:#262661;border:1px solid #262661;border-radius:4px;color:#FFEA0F;display:inline-block;font-family:sans-serif;font-size:13px;font-weight:bold;line-height:50px;text-align:center;text-decoration:none;width:350px;-webkit-text-size-adjust:none;mso-hide:all;">
                                     Yes, subscribe me to Oregon Open Primaries!
                                 </a>
