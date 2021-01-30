@@ -66,25 +66,21 @@ function wga_collect_email_list_activation() {
 			)
 			. '</p> <a href="' . admin_url( 'plugins.php' ) . '">' . __( 'go back', 'wga_collect_email_list' ) . '</a>'
 		);
-    }
-    // cwd  = C:\laragon\www\forms\wp-admin
-    // targ = C:\laragon\www\forms\wp-content\plugins\wga-collect-email-list
-    $fn = '../wp-content/plugins/wga-collect-email-list/scripts/verify.php';    
-    $newfn = '../wp-includes/wga-verify.php'; 
-    /*
-    if(file_exists($fn)){
-        echo sprintf('file %s exists',$fn);
-    }else{
-        echo sprintf('file %s does not exist',$fn);
-    }*/
-    if(!copy($fn,$newfn)) {
-		wp_die(
-			'<p>' .
-			sprintf(
-                __( 'This plugin can not be activated because it failed to copy the verify.php file to its active home.')
-			).'</p>'.getcwd()
-		);
-    }
+	}
+	// C:\laragon\www\wp2\wp-content\plugins
+	$filename = __DIR__.'/scripts/verify.php';
+	$dest1dir = __DIR__.'/../../../';
+	$destfile = $dest1dir.'verify.php';
+
+	if (!file_exists($filename)) {
+    	wp_die("Could not activate\nThe file $filename does not exist");
+	}
+	if (!file_exists($dest1dir)) {
+    	wp_die("Could not activate\nThe file $dest1dir does not exist");
+	}
+	if (!copy($filename, $destfile)) {
+    	wp_die("Could not activate\nThe file $filename could not be copied");
+	}
 }
 
 global $wga_db_version;
@@ -170,13 +166,17 @@ function wga_collect_email_list_deactivation() { // TESTME echos are not display
 	check_admin_referer( "deactivate-plugin_{$plugin}" );
 	echo 'past second check'.PHP_EOL;
 	
-    // Deactivation rules here
-    // cwd  = C:\laragon\www\forms\wp-admin
-    // targ = C:\laragon\www\forms\wp-content\plugins\wga-collect-email-list
-    $oldfn = '../verify.php'; 
-    if (!unlink($oldfn)) {
-        wp_die( '<p>' . $oldfn . ' was not removed properly.</p>working directory: '.getcwd() );
-    };
+  	// Deactivation rules here
+	$dest1dir = __DIR__.'/../../../';
+	$destfile = $dest1dir.'verify.php';
+
+	if (!file_exists($destfile)) {
+    	wp_die("Could not deactivate\nThe file $destfile does not exist");
+	}
+	if (!unlink($destfile)) {
+    	wp_die("Could not deactivate\nThe file $destfile could not be removed");
+	}
+  echo 'Reached end of deactivation function'.PHP_EOL;
 }
 
 //
@@ -266,7 +266,7 @@ function wga_html_form_code($inpopup) {
 		echo '  margin: 1em 0;'.PHP_EOL;
 		echo '  padding 1em;'.PHP_EOL;
 		echo '  border: 1px solid #ccc;'.PHP_EOL;
-		echo '  background: #f8f8f8;'.PHP_EOL;
+		echo '  background: #3cb5e8;'.PHP_EOL; //#f8f8f8;'.PHP_EOL;
 		//echo '  font-size:0.75em;'.PHP_EOL;
 		//echo '  display: inline-block;'.PHP_EOL;
 		echo '  width: 33em;'.PHP_EOL;
