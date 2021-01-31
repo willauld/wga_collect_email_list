@@ -185,8 +185,10 @@ function wga_html_form_code($inpopup, $contact_form) {
 
 	/* define variables and set to empty values */
 	$nameErr = $emailErr = "";
-	$name = $email = "";
-	$message = "";
+    $name = $email = "";
+    $input_message = "";
+    $message = "";
+    $remember = false;
 	
 	//
 	// set for use in or out of a plugin
@@ -201,7 +203,15 @@ function wga_html_form_code($inpopup, $contact_form) {
 	    if (!preg_match("/^[a-zA-Z-' ]*$/",$name)) { 
 	      $nameErr = "Letters & white space only";
 	    }
-	  }
+      }
+      
+      if (!empty($_POST["remember"])) { // checkbox
+        $remember = $_POST["remember"];
+      }
+
+      if (!empty($_POST["text"])) {
+          $input_message = wga_test_input($_POST["text"]);
+      }
   
 	  if (empty($_POST["cf-email"])) {
 	    $emailErr = "Email is required";
@@ -210,7 +220,7 @@ function wga_html_form_code($inpopup, $contact_form) {
 	    /* check if e-mail address is well-formed */
 	    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 	      $emailErr = "Invalid email format";
-	    } else {
+	    } elseif (!$contact_form or $remember) {
 			$query   = $wpdb->prepare( 
 				"SELECT * FROM {$wpdb->prefix}wga_contact_list WHERE email = %s", $email 
 			);
@@ -229,15 +239,17 @@ function wga_html_form_code($inpopup, $contact_form) {
 		// No errors, clear the fields, email?, Database? HERE
 		//
 			
-		wga_process_input($name, $email);
+        wga_process_input($name, $email, $remember, $input_message);
 	
-		$name = $email = "";
+        $name = $email = "";
+        $input_message = "";
+        $remember = false;
 		
 		$_POST['post_handled'] = true;
 		
-		//if ($inpopup == true) {
+		if ($inpopup == true) {
 		  echo '<h2>Thank you!</h2><br>Please verify your email address by clicking the activation link that has been sent to your email.';
-		//}
+		}
 		echo '<script>'.PHP_EOL;
 		echo 'if ( window.history.replaceState ) {'.PHP_EOL;
 		echo '	window.history.replaceState( null, null, window.location.href );'.PHP_EOL;
@@ -277,8 +289,7 @@ function wga_html_form_code($inpopup, $contact_form) {
 		//echo '  text-align:right;'.PHP_EOL;
 		echo '}'.PHP_EOL;
 		
-		//echo 'label, required{';
-		echo '	label {'.PHP_EOL;
+        echo '  .reg_label {'.PHP_EOL;
 		echo '    float:left;'.PHP_EOL;
 		echo '    width:14%;'.PHP_EOL;
 		echo '    margin-right:0.5em;'.PHP_EOL;
@@ -301,8 +312,8 @@ function wga_html_form_code($inpopup, $contact_form) {
 		echo '  border-radius: 5px; '.PHP_EOL;
 		echo '}'.PHP_EOL;
 		echo 'textarea {'.PHP_EOL;
-		echo '  width: 300px;'.PHP_EOL;
-		echo '  height: 100px;'.PHP_EOL;
+		echo '  width: 500px;'.PHP_EOL;
+		echo '  height: 150px;'.PHP_EOL;
 		echo '}'.PHP_EOL;
 		echo 'required{'.PHP_EOL;
 		echo '  font-size: 0.75em;'.PHP_EOL;
@@ -319,32 +330,40 @@ function wga_html_form_code($inpopup, $contact_form) {
 			}
 		}
 		echo '    <fieldset>'.PHP_EOL;
+		if ($contact_form) {
+		echo '      <legend>Contact Form</legend>';
+        } else {
 		echo '      <legend>Join email list</legend>';
+        }
 		echo '      <p><span class="error">* required field</span></p> '.PHP_EOL;
 		echo '      <p>'.PHP_EOL;
-		echo '        <label for="name">Name:<em class="required">*</em> </label>';
+		echo '        <label class="reg_label" for="name">Name:<em class="required">*</em> </label>';
 		echo '        <input type="text" id="name" name="cf-name" tabindex="1" value="' . $name . '">'.PHP_EOL;
 		echo '        <span class="error"> ' . $nameErr . '</span>'.PHP_EOL;
 		echo '      </p>'.PHP_EOL;
 		echo '      <p>'.PHP_EOL;
-		echo '        <label for="email">Email:<em class="required">*</em> </label>';
+		echo '        <label class="reg_label" for="email">Email:<em class="required">*</em> </label>';
 		echo '        <input type="text" id="email" name="cf-email" tabindex="2" value="' . $email . '">'.PHP_EOL;
 		echo '        <span class="error"> ' . $emailErr . '</span>'.PHP_EOL;
 		echo '      </p>'.PHP_EOL;
-		echo '    </fieldset>'.PHP_EOL;
+		//echo '    </fieldset>'.PHP_EOL;
 		if ($contact_form) {
-		echo '	  <fieldset>'.PHP_EOL;
-		echo '		<p><input type="checkbox" id="remember" name="remember" tabindex="3">'.PHP_EOL;
-		echo '		<label for="remember">Remember this info?</label></p>'.PHP_EOL;
-		echo '    </fieldset>'.PHP_EOL;
+        //echo '	  <fieldset>'.PHP_EOL;
+        if ($remember){
+		echo '		<p><input type="checkbox" id="remember" name="remember" tabindex="3" checked>'.PHP_EOL;
+        } else {
+        echo '		<p><input type="checkbox" id="remember" name="remember" tabindex="3">'.PHP_EOL;
+        }
+		echo '		<label for="remember">Join Mailing List?</label></p>'.PHP_EOL;
+		//echo '    </fieldset>'.PHP_EOL;
 
-		echo '	  <fieldset id="com">'.PHP_EOL;
-		echo '		<legend>Comments</legend>'.PHP_EOL;
-		echo '		<p><label for="text">Message: </label>'.PHP_EOL;
-		echo '		<textarea name="text" id="text" cols="20" rows="10" tabindex="4"></textarea>'.PHP_EOL;
+		//echo '	  <fieldset id="com">'.PHP_EOL;
+		//echo '		<legend>Comments</legend>'.PHP_EOL;
+		echo '		<p><label class="reg_label" for="text">Message: </label>'.PHP_EOL;
+		echo '		<textarea name="text" id="text" cols="20" rows="10" tabindex="4">'.$input_message.'</textarea>'.PHP_EOL;
 		echo '		</p>'.PHP_EOL;
-		echo '	  </fieldset>'.PHP_EOL;
 		}
+		echo '	  </fieldset>'.PHP_EOL;
 		echo '    <input type="submit" name="cf-submitted" value="Submit">'.PHP_EOL;
 		if ($inpopup == false) {
 			echo '  </fieldset>'.PHP_EOL;
@@ -367,13 +386,13 @@ function wga_test_input($data) {
   return $data;
 }
 
-function wga_process_input($name, $email) {
+function wga_process_input($name, $email, $remember, $input_message) {
     global $wpdb;
     $source = "?";
 	
 	$a = explode(" ", $name, 2);
 	$first_name = $a[0];
-	$last_name = $a[1];
+    $last_name = $a[1];
 	//
 	// Add db record
 	//
