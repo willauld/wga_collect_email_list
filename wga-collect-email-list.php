@@ -236,7 +236,7 @@ function wga_html_form_code($inpopup) {
 		$_POST['post_handled'] = true;
 		
 		//if ($inpopup == true) {
-		  echo '<h2>Thank you!</h2><br>Please verify your email address by clicking the activation link that has been send to your email.';
+		  echo '<h2>Thank you!</h2><br>Please verify your email address by clicking the activation link that has been sent to your email.';
 		//}
 		echo '<script>'.PHP_EOL;
 		echo 'if ( window.history.replaceState ) {'.PHP_EOL;
@@ -306,6 +306,9 @@ function wga_html_form_code($inpopup) {
 		echo '<form action="' . esc_url( $_SERVER['REQUEST_URI'] ) . '" method="post">'.PHP_EOL;
 		if ($inpopup == false) {
 			echo '  <fieldset id="pinfo">'.PHP_EOL;
+			if (!empty($_POST['post_handled'])) {
+		  		echo '<h2>Thank you!</h2><br>Please verify your email address by clicking the activation link that has been sent to your email.';
+			}
 		}
 		echo '    <fieldset>'.PHP_EOL;
 		echo '      <legend>Join email list</legend>';
