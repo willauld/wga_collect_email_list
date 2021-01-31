@@ -3,8 +3,8 @@
     // Make this page compatable with the rest of wordpress
     //
     require_once(dirname(__FILE__) . '/wp-blog-header.php');
-    //header("HTTP/1.1 200 OK");
-    //header("Status: 200 All rosy");
+    header("HTTP/1.1 200 OK");
+    header("Status: 200 All rosy");
 
     // Your WordPress functions here...
     //echo site_url();
@@ -43,18 +43,35 @@
 							  
 							  
 				$query   = $wpdb->prepare( 
-					"SELECT email, is_verified, vhash FROM {$wpdb->prefix}wga_contact_list WHERE email ='".$email."' AND vhash='".$hash."' AND is_verified='0'"
+					//"SELECT email, is_verified, vhash FROM {$wpdb->prefix}wga_contact_list WHERE email ='".$email."' AND vhash='".$hash."' AND is_verified='0'"
+					"SELECT email, is_verified, vhash FROM {$wpdb->prefix}wga_contact_list WHERE email =%s AND vhash=%s AND is_verified=0", $email, $hash 
 				);
 				$results = $wpdb->get_results( $query );
 				$match = count($results);
 
 				if($match > 0){
 					// We have a match, record verification
-					$query   = $wpdb->prepare(
-						"UPDATE {$wpdb->prefix}wga_contact_list SET is_verified='1' WHERE email='".$email."' AND vhash='".$hash."' AND is_verified='0'"
-						);
-					$results = $wpdb->get_results( $query );
-					echo '<div class="statusmsg">Your email has been verified, Thank you.</div>';
+					$updated_at = current_time( 'mysql' );
+					echo "update_at time is: ".$updated_at;
+					if ($wpdb->update(
+						"{$wpdb->prefix}wga_contact_list",
+						array( 
+        					'is_verified' => '1',
+        					'updated_at' => $updated_at,
+    					),
+						array( 
+        					'email' => "$email",
+    					    'vhash' => "$hash",
+							'is_verified' => '0',
+    					)
+					) 
+					== 1) 
+					{
+						echo '<div class="statusmsg">Your email has been verified, Thank you.</div>';
+					} else {
+						echo '<div class="statusmsg">Your email has been verified, but there was a problem updating your record. Please notify the admin. Thank you.</div>';
+
+					}
 				}else{
 					// No match -> invalid url or email has already been verified
 					echo '<div class="statusmsg">The url is either invalid or you already verified your email.</div>';
