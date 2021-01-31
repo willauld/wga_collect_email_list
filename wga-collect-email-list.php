@@ -384,7 +384,7 @@ function wga_process_input($name, $email) {
                         </style>
                     </head>
                     <body>
-                        <img width="600" src="https://staging2.williama18.sg-host.com/wp-content/uploads/2020/12/LogoOregonOpenPrimaries.png" alt="Let ALL voters vote!"/><br><br>
+                        <img width="600" src="'.site_url().'/wp-content/uploads/2020/12/LogoOregonOpenPrimaries.png" alt="Let ALL voters vote!"/><br><br>
                         <br><br>
                         <br>' .
                         $name . ',<br>
