@@ -1,18 +1,16 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-  
 <?php 
     //
     // Make this page compatable with the rest of wordpress
     //
     require_once(dirname(__FILE__) . '/wp-blog-header.php');
-    header("HTTP/1.1 200 OK");
-    header("Status: 200 All rosy");
+    //header("HTTP/1.1 200 OK");
+    //header("Status: 200 All rosy");
 
     // Your WordPress functions here...
     //echo site_url();
 ?>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 <head>
     <title>Oregon Open Primaries Email Verification</title>
     <link href="css/style.css" type="text/css" rel="stylesheet" />
