@@ -52,7 +52,6 @@
 				if($match > 0){
 					// We have a match, record verification
 					$updated_at = current_time( 'mysql' );
-					echo "update_at time is: ".$updated_at;
 					if ($wpdb->update(
 						"{$wpdb->prefix}wga_contact_list",
 						array( 
