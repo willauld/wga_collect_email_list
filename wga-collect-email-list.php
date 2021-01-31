@@ -179,7 +179,7 @@ function wga_collect_email_list_deactivation() { // TESTME echos are not display
 // form code
 //
 
-function wga_html_form_code($inpopup) {
+function wga_html_form_code($inpopup, $contact_form) {
 	
 	global $wpdb;
 
@@ -300,6 +300,14 @@ function wga_html_form_code($inpopup) {
 		//echo '  -webkit-border-radius: 5px;'.PHP_EOL;
 		echo '  border-radius: 5px; '.PHP_EOL;
 		echo '}'.PHP_EOL;
+		echo 'textarea {'.PHP_EOL;
+		echo '  width: 300px;'.PHP_EOL;
+		echo '  height: 100px;'.PHP_EOL;
+		echo '}'.PHP_EOL;
+		echo 'required{'.PHP_EOL;
+		echo '  font-size: 0.75em;'.PHP_EOL;
+		echo '  color: #760000;'.PHP_EOL;
+		echo '}'.PHP_EOL;
 		
 		echo '</style>'.PHP_EOL;
 
@@ -324,6 +332,19 @@ function wga_html_form_code($inpopup) {
 		echo '        <span class="error"> ' . $emailErr . '</span>'.PHP_EOL;
 		echo '      </p>'.PHP_EOL;
 		echo '    </fieldset>'.PHP_EOL;
+		if ($contact_form) {
+		echo '	  <fieldset>'.PHP_EOL;
+		echo '		<p><input type="checkbox" id="remember" name="remember" tabindex="3">'.PHP_EOL;
+		echo '		<label for="remember">Remember this info?</label></p>'.PHP_EOL;
+		echo '    </fieldset>'.PHP_EOL;
+
+		echo '	  <fieldset id="com">'.PHP_EOL;
+		echo '		<legend>Comments</legend>'.PHP_EOL;
+		echo '		<p><label for="text">Message: </label>'.PHP_EOL;
+		echo '		<textarea name="text" id="text" cols="20" rows="10" tabindex="4"></textarea>'.PHP_EOL;
+		echo '		</p>'.PHP_EOL;
+		echo '	  </fieldset>'.PHP_EOL;
+		}
 		echo '    <input type="submit" name="cf-submitted" value="Submit">'.PHP_EOL;
 		if ($inpopup == false) {
 			echo '  </fieldset>'.PHP_EOL;
@@ -439,16 +460,22 @@ function wga_process_input($name, $email) {
 
 function wga_shortcode_popup() {
 	ob_start();
-	wga_html_form_code(true /*inpopup=true*/);
+wga_html_form_code(true /*inpopup=true*/, false /*contact_form*/);
 	return ob_get_clean();
 }
 add_shortcode( 'wga_popup_email_form', 'wga_shortcode_popup' );
 
 function wga_shortcode_on_page() {
 	ob_start();
-	wga_html_form_code(false /*inpopup=false*/);
+wga_html_form_code(false /*inpopup=false*/, false /*contact_form*/);
 	return ob_get_clean();
 }
 add_shortcode( 'wga_on_page_email_form', 'wga_shortcode_on_page' );
 
+function wga_shortcode_on_page_contact_form() {
+	ob_start();
+wga_html_form_code(false /*inpopup=false*/, true /*contact_form*/);
+	return ob_get_clean();
+}
+add_shortcode( 'wga_on_page_contact_form', 'wga_shortcode_on_page_contact_form' );
 ?>
