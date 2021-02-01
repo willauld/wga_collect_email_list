@@ -156,7 +156,7 @@ function wga_install_data() {
 //
 
 register_deactivation_hook( __FILE__, 'wga_collect_email_list_deactivation' );
-function wga_collect_email_list_deactivation() { // TESTME echos are not displayed!
+function wga_collect_email_list_deactivation() { 
 	if ( ! current_user_can( 'activate_plugins' ) ) {
 		return;
 	}
@@ -187,9 +187,12 @@ function wga_html_form_code($inpopup, $contact_form) {
 	$nameErr = $emailErr = "";
     $name = $email = "";
     $input_message = "";
-    $message = "";
     $remember = false;
-	
+    
+    echo __LINE__.":: contact_form: $contact_form\n";
+    if ($contact_form==0) {
+        debug_print_backtrace();
+    }
 	//
 	// set for use in or out of a plugin
 	//
@@ -220,15 +223,13 @@ function wga_html_form_code($inpopup, $contact_form) {
 	    /* check if e-mail address is well-formed */
 	    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 	      $emailErr = "Invalid email format";
-	    } elseif (!$contact_form or $remember) {
+	    } elseif ($contact_form==0 or $remember) {
 			$query   = $wpdb->prepare( 
 				"SELECT * FROM {$wpdb->prefix}wga_contact_list WHERE email = %s", $email 
 			);
 			$results = $wpdb->get_results( $query );
 
 			if ( count( $results ) > 0 ) {
-				//wp_send_json_error( "Email already exits. Results: $results", 400 );
-				//wp_die( "Email already exits. Results: ", $results);
 				$emailErr = "Email already exits";
 			}
 		}
@@ -238,8 +239,9 @@ function wga_html_form_code($inpopup, $contact_form) {
 		//
 		// No errors, clear the fields, email?, Database? HERE
 		//
+        echo __LINE__.":: contact_form: $contact_form\n";
 			
-        wga_process_input($name, $email, $remember, $input_message);
+        wga_process_input($name, $email, $remember, $input_message, $contact_form);
 	
         $name = $email = "";
         $input_message = "";
@@ -247,7 +249,7 @@ function wga_html_form_code($inpopup, $contact_form) {
 		
 		$_POST['post_handled'] = true;
 		
-		if ($inpopup == true) {
+		if ($inpopup == 1) {
 		  echo '<h2>Thank you!</h2><br>Please verify your email address by clicking the activation link that has been sent to your email.';
 		}
 		echo '<script>'.PHP_EOL;
@@ -261,7 +263,7 @@ function wga_html_form_code($inpopup, $contact_form) {
     //
 	// form execution
 	//
-	if (($inpopup == false) or empty($_POST['post_handled'])) {
+	if (($inpopup == 0) or empty($_POST['post_handled'])) {
 		echo '<style>'.PHP_EOL;
 		
 		echo '.error, .required {'.PHP_EOL;
@@ -323,14 +325,15 @@ function wga_html_form_code($inpopup, $contact_form) {
 		echo '</style>'.PHP_EOL;
 
 		echo '<form action="' . esc_url( $_SERVER['REQUEST_URI'] ) . '" method="post">'.PHP_EOL;
-		if ($inpopup == false) {
+		if ($inpopup == 0) {
 			echo '  <fieldset id="pinfo">'.PHP_EOL;
-			if (!empty($_POST['post_handled'])) {
+			if ((!empty($_POST['post_handled'])) and ($contact_form==0 or $remember)) {
+                // FIXME something wrong here
 		  		echo '<h2>Thank you!</h2><br>Please verify your email address by clicking the activation link that has been sent to your email.';
 			}
 		}
 		echo '    <fieldset>'.PHP_EOL;
-		if ($contact_form) {
+		if ($contact_form==1) {
 		echo '      <legend>Contact Form</legend>';
         } else {
 		echo '      <legend>Join email list</legend>';
@@ -347,7 +350,7 @@ function wga_html_form_code($inpopup, $contact_form) {
 		echo '        <span class="error"> ' . $emailErr . '</span>'.PHP_EOL;
 		echo '      </p>'.PHP_EOL;
 		//echo '    </fieldset>'.PHP_EOL;
-		if ($contact_form) {
+		if ($contact_form==1) {
         //echo '	  <fieldset>'.PHP_EOL;
         if ($remember){
 		echo '		<p><input type="checkbox" id="remember" name="remember" tabindex="3" checked>'.PHP_EOL;
@@ -365,7 +368,7 @@ function wga_html_form_code($inpopup, $contact_form) {
 		}
 		echo '	  </fieldset>'.PHP_EOL;
 		echo '    <input type="submit" name="cf-submitted" value="Submit">'.PHP_EOL;
-		if ($inpopup == false) {
+		if ($inpopup == 0) {
 			echo '  </fieldset>'.PHP_EOL;
 		}
 		echo '</form>'.PHP_EOL;
@@ -386,9 +389,11 @@ function wga_test_input($data) {
   return $data;
 }
 
-function wga_process_input($name, $email, $remember, $input_message) {
+function wga_process_input($name, $email, $remember, $input_message, $contact_form) {
     global $wpdb;
     $source = "?";
+
+    echo __LINE__." contact_form: $contact_form\n";
 	
 	$a = explode(" ", $name, 2);
 	$first_name = $a[0];
@@ -411,9 +416,60 @@ function wga_process_input($name, $email, $remember, $input_message) {
             'created_at' => $created_at,
             'vhash' => $hash, 
 		) 
-	);
+    );
+    if ($contact_form==0 or $remember) {
+        echo __LINE__." contact_form: $contact_form\n";
+        $verification_success = wga_send_verification_email($name, $email, $hash);
+    }
+    if ($contact_form==1 and (!empty($input_message) and $input_message != "")) {
+        echo __LINE__." contact_form: $contact_form\n";
+        //wp_die("Contact_form: $contact_form Message: $input_message");
+        $contact_success = wga_send_message($name, $email, $input_message);
+    }
+}
+
+function wga_send_message($name, $email, $input_message) {
+    //
+	// Send HTML mail message to info@OregonOpenPrimaries.org:
 	//
-	// Send HTML mail to:
+	$subject = "Message from OregonOpenPrimaries.org contact form"; // sanitize_text_field( $_POST["cf-subject"] );
+
+	// get the blog administrator's email address
+	//$to = get_option( 'admin_email' );
+	
+    // test code - button code generated at: https://buttons.cm/
+    $message = '<html>
+                    <head>
+                        <style type=“text/css”>
+                        </style>
+                    </head>
+                    <body>
+                        <img width="600" src="'.site_url().'/wp-content/uploads/2020/12/LogoOregonOpenPrimaries.png" alt="Let ALL voters vote!"/><br><br>
+                        <br><br>
+                        <br>' .
+                        $name . ' has sent the following message:<br><br>
+                        "'.$input_message.'"<br><br>
+                        Please respond to: "' .$email. '"<br><br>
+                        Thanks <br>
+                        <br>
+                    </body>
+                </html>';
+	 
+	$to = "info@OregonOpenPrimaries.org";
+	$headers = "From: $name <$email>" . "\r\n";
+	//$headers = "From: OregonOpenPrimaries.org <info@OregonOpenPrimaries.org> \r\n";
+	$headers .= "Cc:OregonOpenPrimaries.org <info@OregonOpenPrimaries.org> \r\n";
+	$headers .= "Cc:".get_option( 'admin_email' )." \r\n";
+	$headers .= "MIME-Version: 1.0\r\n";
+	$headers .= "Content-type: text/html\r\n";
+
+	$email_response = wp_mail( $to, $subject, $message, $headers );
+	return $email_response;
+}
+
+function wga_send_verification_email($name, $email, $hash) {
+    //
+	// Send HTML mail to verify email address:
 	//
 	$subject = "Confirm subscription to Oregon Open Primaries"; // sanitize_text_field( $_POST["cf-subject"] );
 
@@ -467,34 +523,33 @@ function wga_process_input($name, $email, $remember, $input_message) {
 
 	// original: $email_response = wp_mail( $to, $subject, $message, $headers );
 	$email_response = wp_mail( $to, $subject, $message, $headers );
-	// If email has been process for sending, display a success message
-	if ( $email_response ) {
-		//echo '<div>';
-		//echo '<p>Thanks for contacting me, expect a response soon.</p>';
-		//echo '</div>';
-	} else {
-		//echo 'An unexpected error occurred';
-	}
+	return $email_response;
 }
 
 function wga_shortcode_popup() {
 	ob_start();
-wga_html_form_code(true /*inpopup=true*/, false /*contact_form*/);
+    $inpopup = 1; 
+    $contact_form = 0;
+    wga_html_form_code($inpopup, $contact_form);
 	return ob_get_clean();
 }
 add_shortcode( 'wga_popup_email_form', 'wga_shortcode_popup' );
 
 function wga_shortcode_on_page() {
 	ob_start();
-wga_html_form_code(false /*inpopup=false*/, false /*contact_form*/);
+    $inpopup = 0;
+    $contact_form = 0;
+    wga_html_form_code($inpopup, $contact_form);
 	return ob_get_clean();
 }
 add_shortcode( 'wga_on_page_email_form', 'wga_shortcode_on_page' );
 
 function wga_shortcode_on_page_contact_form() {
-	ob_start();
-wga_html_form_code(false /*inpopup=false*/, true /*contact_form*/);
+    ob_start();
+    $inpopup = 0;
+    $contact_form = 1;
+    wga_html_form_code($inpopup, $contact_form);
 	return ob_get_clean();
 }
-add_shortcode( 'wga_on_page_contact_form', 'wga_shortcode_on_page_contact_form' );
+add_shortcode( 'wga_1st_contact_form', 'wga_shortcode_on_page_contact_form' );
 ?>
