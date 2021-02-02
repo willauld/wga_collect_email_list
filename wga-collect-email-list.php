@@ -199,6 +199,8 @@ function wga_html_form_code($inpopup, $contact_form) {
         echo var_dump($_POST);
     }
     echo '-->';
+
+	echo wga_console_log( "Error Message: This is really a 'unique' problem!" );
 	//
 	// set for use in or out of a plugin
 	//
@@ -314,8 +316,10 @@ function wga_html_form_code($inpopup, $contact_form) {
 		
 		echo '#pinfo {'.PHP_EOL;
 		//echo '  font-size: 0.75em;'.PHP_EOL;
-		//echo '  width: 80%;';
-		echo '}';
+		//echo '  width: 80%;'.PHP_EOL;
+		echo '  position: relative;'.PHP_EOL;
+		echo '  left:-2.5em;'.PHP_EOL;
+		echo '}'.PHP_EOL;
 		
 		echo 'input[type=submit] {'.PHP_EOL;
 		echo '  padding:5px 10px; '.PHP_EOL;
@@ -400,6 +404,15 @@ function wga_test_input($data) {
   $data = stripslashes($data);
   $data = htmlspecialchars($data);
   return $data;
+}
+function wga_console_log( $message ) {
+
+    $message = htmlspecialchars( stripslashes( $message ) );
+    //Replacing Quotes, so that it does not mess up the script
+    $message = str_replace( '"', "-", $message );
+    $message = str_replace( "'", "-", $message );
+
+    return "<script>console.log('{$message}')</script>";
 }
 
 function wga_process_input($name, $email, $remember, $input_message, $contact_form) {
