@@ -194,6 +194,11 @@ function wga_html_form_code($inpopup, $contact_form) {
     //if ($contact_form==0) {
     //    debug_print_backtrace();
     //}
+    echo '<!-- Posted1:';
+    if ($_POST) {
+        echo var_dump($_POST);
+    }
+    echo '-->';
 	//
 	// set for use in or out of a plugin
 	//
@@ -210,7 +215,7 @@ function wga_html_form_code($inpopup, $contact_form) {
       }
       
       if (!empty($_POST["remember"])) { // checkbox
-        if ($_POST["remember"]) {
+        if ($_POST["remember"] == "on") {
 			$remember = 1;
 			$was_remembered = 1;
 		} else {
@@ -264,7 +269,7 @@ function wga_html_form_code($inpopup, $contact_form) {
 		echo '	window.history.replaceState( null, null, window.location.href );'.PHP_EOL;
 		echo '}'.PHP_EOL;
 		echo '</script>'.PHP_EOL;
-	  }
+      }
 	}
 	
     //
@@ -377,12 +382,16 @@ function wga_html_form_code($inpopup, $contact_form) {
 		}
 		echo '</form>'.PHP_EOL;
 		
-		//echo '<script>'.PHP_EOL;
-		//echo 'if ( window.history.replaceState ) {'.PHP_EOL;
-		//echo '	window.history.replaceState( null, null, window.location.href );'.PHP_EOL;
-		//echo '}'.PHP_EOL;
-		//echo '</script>'.PHP_EOL;
 	}
+	if (!empty($_POST['post_handled'])) {
+        if (true) {
+		echo '<script>'.PHP_EOL;
+		echo 'if ( window.history.replaceState ) {'.PHP_EOL;
+		echo '	window.history.replaceState( null, null, window.location.href );'.PHP_EOL;
+		echo '}'.PHP_EOL;
+		echo '</script>'.PHP_EOL;
+        }
+    }
 }
 
 
