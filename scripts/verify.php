@@ -24,9 +24,16 @@
 	?>
 </head>
 <body>
+<style>
+	#wrap .statusmsg{
+		font-size: 12px; /* Set message font size  */
+		padding: 3px; /* Some padding to make some more space for our text  */
+		background: #EDEDED; /* Add a background color to our status message   */
+		border: 1px solid #DFDFDF; /* Add a border arround our status message   */
+	}	
     <!-- start header div --> 
     <div id="header">
-        <h3>Oregon Open Primaries Email Verification</h3>
+        <h2>Oregon Open Primaries Email Verification</h2>
     </div>
     <!-- end header div -->   
       
