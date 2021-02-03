@@ -199,8 +199,17 @@ function wga_html_form_code($inpopup, $contact_form) {
         echo var_dump($_POST);
     }
     echo '-->';
+	if ($_POST) {
+		$page="post";
+	}elseif($_GET) {
+		$page="get";
+	}else{
+		$page="?";
+	}
+	//$error_string = print_r($e->getTrace(), true);
 
-	echo wga_console_log( "Error Message: This is really a 'unique' problem!" );
+	echo wga_console_log( __LINE__." WGA:: page:$page, inpopup:$inpopup, contact_form:$contact_form" );
+	//echo wga_console_log( "WGA:: ".print_r($e->getTrace(), true) );
 	//
 	// set for use in or out of a plugin
 	//
@@ -387,6 +396,7 @@ function wga_html_form_code($inpopup, $contact_form) {
 		echo '</form>'.PHP_EOL;
 		
 	}
+	/*
 	if (!empty($_POST['post_handled'])) {
         if (true) {
 		echo '<script>'.PHP_EOL;
@@ -396,8 +406,162 @@ function wga_html_form_code($inpopup, $contact_form) {
 		echo '</script>'.PHP_EOL;
         }
     }
+	*/
 }
 
+function wga_pancake_email_form() {
+	
+	global $wpdb;
+
+	/* define variables and set to empty values */
+	$Err = $emailErr = "";
+    $name = $email = "";
+	$fullMsg = '';
+    
+    //echo __LINE__.":: contact_form: $contact_form remember: $remember\n";
+	if ($_POST) {
+		$page="post";
+	}elseif($_GET) {
+		$page="get";
+	}else{
+		$page="?";
+	}
+
+	echo wga_console_log( __LINE__." WGA:: page:$page, fullMsg: $fullMsg" );
+	//
+	// set for use in or out of a plugin
+	//
+	if (($_SERVER["REQUEST_METHOD"] == "POST") and (empty($_POST['post_handled'])))
+	{
+	  if (empty($_POST["name"]) or empty($_POST["email"])) {
+	    $Err = "both fields are required";
+	  } 
+	  if (!empty($_POST["name"])) {
+	    $name = wga_test_input($_POST["name"]);
+      }
+	  if (!empty($_POST["email"])) {
+	    $email = wga_test_input($_POST["email"]);
+	    /* check if e-mail address is well-formed */
+	    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+	      $emailErr = "Invalid email format";
+	    } else {
+			$query   = $wpdb->prepare( 
+				"SELECT * FROM {$wpdb->prefix}wga_contact_list WHERE email = %s", $email 
+			);
+			$results = $wpdb->get_results( $query );
+
+			if ( count( $results ) > 0 ) {
+				$emailErr = "Email already exits";
+			}
+		}
+	  }
+	  if ($Err == "" and $emailErr == "") {
+		  
+		//
+		// No errors, clear the fields, email?, Database? HERE
+		//
+        //echo __LINE__.":: contact_form: $contact_form\n";
+		
+		echo wga_console_log( __LINE__." WGA:: page:$page, fullMsg: $fullMsg" ); 
+		
+		$noval = 0; 
+		
+		wga_process_input($name, $email, $noval, "", $noval);
+        	
+        $name = $email = "";
+		
+		$_POST['post_handled'] = true;
+		
+		$fullMsg = '<h2>Thank you!</h2><br>Please verify your email address by clicking the activation link that has been sent to your email.';
+
+		//echo '<script>'.PHP_EOL;
+		//echo 'if ( window.history.replaceState ) {'.PHP_EOL;
+		//echo '	window.history.replaceState( null, null, window.location.href );'.PHP_EOL;
+		//echo '}'.PHP_EOL;
+		//echo '</script>'.PHP_EOL;
+
+		echo wga_console_log( __LINE__." WGA:: page:$page, fullMsg: $fullMsg" ); 
+      } else {
+		  if ((!empty($Err)) and (!empty($emailErr))) {
+			  $fullMsg = $emailErr." and ".$Err;
+		  }else{
+			  $fullMsg = $emailErr.$Err;
+		  }
+		echo wga_console_log( __LINE__." WGA:: page:$page, fullMsg: $fullMsg" ); 
+	  }
+	}
+	
+    //
+	// form execution
+	//
+		echo wga_console_log( __LINE__." WGA:: page:$page, fullMsg: $fullMsg" ); 
+
+	echo '	<style>'.PHP_EOL;
+	echo '	#wrap{'.PHP_EOL;
+	//echo '		background: #FFFFFF; /* Set content background to white */'.PHP_EOL;
+	//echo '		background: #19B2E4; /* Set content background to bluish */'.PHP_EOL;
+	echo '		background: #2E115E; /* Set content background to site background */'.PHP_EOL;
+	//echo '	    width: 615px; /* Set the width of our content area */'.PHP_EOL;
+	echo '	    margin: 0 auto; /* Center our content in our browser */'.PHP_EOL;
+	//echo '	    margin-top: 50px; /* Margin top to make some space between the header and the content */'.PHP_EOL;
+	echo '	    padding: 10px; /* Padding to make some more space for our text */'.PHP_EOL;
+	echo '	    border: 1px solid #DFDFDF; /* Small border for the finishing touch */'.PHP_EOL;
+	echo '	    text-align: center; /* Center our content text */'.PHP_EOL;
+	//echo '		color: #464646; /* Set global text color */'.PHP_EOL;
+	echo '	}'.PHP_EOL;
+	echo '	  '.PHP_EOL;
+	echo '	/* Form & Input field styles */'.PHP_EOL;
+	echo '	  '.PHP_EOL;
+	echo '	form{'.PHP_EOL;
+	//echo '	    margin-top: 10px; /* Make some more distance away from the description text */'.PHP_EOL;
+	echo '	}'.PHP_EOL;
+	echo '	  '.PHP_EOL;
+	echo '	form .submit_button{'.PHP_EOL;
+	echo '	    font: normal 16px Georgia; /* Set font for our input fields */'.PHP_EOL;
+	echo '	    background: #F9F9F9; /* Set button background */'.PHP_EOL;
+	echo '	    border: 1px solid #DFDFDF; /* Small border around our submit button */'.PHP_EOL;
+	echo '	    padding: 8px; /* Add some more space around our button text */'.PHP_EOL;
+	echo '	}'.PHP_EOL;
+	echo '	  '.PHP_EOL;
+	echo '	input{'.PHP_EOL;
+	echo '	    font: normal 16px Georgia; /* Set font for our input fields */'.PHP_EOL;
+	echo '	    border: 1px solid #DFDFDF; /* Small border around our input field */'.PHP_EOL;
+	echo '	    padding: 8px; /* Add some more space around our text */'.PHP_EOL;
+	echo '	}'.PHP_EOL;
+	echo '	</style>'.PHP_EOL;
+	echo '	<!-- start wrap div -->  '.PHP_EOL;
+	echo '	    <div id="wrap">'.PHP_EOL;
+	echo '	          '.PHP_EOL;
+	echo '	        <!-- start php code -->'.PHP_EOL;
+	echo '	          '.PHP_EOL;
+	echo '	        <!-- stop php code -->'.PHP_EOL;
+	echo '	      '.PHP_EOL;
+	echo '	          '.PHP_EOL;
+	echo '	        <!-- start sign up form -->  '.PHP_EOL;
+	echo '			<form action="' . esc_url( $_SERVER['REQUEST_URI'] ) . '" method="post">'.PHP_EOL;
+	//echo '	        <form action="" method="post">'.PHP_EOL;
+	echo '	            <label for="name">Name:</label>'.PHP_EOL;
+	echo '	            <input type="text" name="name" value="'.$name.'" />'.PHP_EOL;
+	echo '	            <label for="email">Email:</label>'.PHP_EOL;
+	echo '	            <input type="text" name="email" value="'.$email.'" />'.PHP_EOL;
+	echo '	              '.PHP_EOL;
+	echo '	            <input type="submit" class="submit_button" value="Join" />'.PHP_EOL;
+	echo '				<p>'.$fullMsg.'</p>'.PHP_EOL;
+	echo '	        </form>'.PHP_EOL;
+	echo '	        <!-- end sign up form -->'.PHP_EOL;
+	echo '	          '.PHP_EOL;
+	echo '	    </div>'.PHP_EOL;
+		echo wga_console_log( __LINE__." WGA:: page:$page, fullMsg: $fullMsg" ); 
+	if (false and !empty($_POST['post_handled'])) {
+		echo '<script>'.PHP_EOL;
+		echo 'if ( window.history.replaceState ) {'.PHP_EOL;
+		echo '	window.history.replaceState( null, null, window.location.href );'.PHP_EOL;
+		echo '}'.PHP_EOL;
+		echo '</script>'.PHP_EOL;
+	}
+	echo '	    <!-- end wrap div -->'.PHP_EOL;
+		echo wga_console_log( __LINE__." WGA:: page:$page, fullMsg: $fullMsg" ); 
+}
 
 function wga_test_input($data) {
   $data = trim($data);
@@ -405,6 +569,7 @@ function wga_test_input($data) {
   $data = htmlspecialchars($data);
   return $data;
 }
+
 function wga_console_log( $message ) {
 
     $message = htmlspecialchars( stripslashes( $message ) );
@@ -421,19 +586,21 @@ function wga_process_input($name, $email, $remember, $input_message, $contact_fo
 
     //echo __LINE__.":: contact_form: $contact_form Remember: $remember\n";
 	
-	$a = explode(" ", $name, 2);
-	$first_name = $a[0];
-    $last_name = $a[1];
-	//
-	// Add db record
-	//
-    $created_at = current_time( 'mysql' );
-    $hash = md5( rand(0,1000) ); // Generate random 32 character hash
-    // Example output: f4552671f8909587cf485ea990207f3b
+	echo wga_console_log(__LINE__."wga:: remember:$remember, input:$input_message, contact_form:$contact_form");
 
-    //echo __LINE__.":: contact_form: $contact_form Remember: $remember\n";
+    if ($contact_form == 0 or $remember == 1) {
+		$a = explode(" ", $name, 2);
+		$first_name = $a[0];
+		$last_name = $a[1];
+		//
+		// Add db record
+		//
+		$created_at = current_time( 'mysql' );
+		$hash = md5( rand(0,1000) ); // Generate random 32 character hash
+		// Example output: f4552671f8909587cf485ea990207f3b
 
-    if ($contact_form==0 or $remember == 1) {
+		//echo __LINE__.":: contact_form: $contact_form Remember: $remember\n";
+
 		//
 		// Add to db and send verification email
 		//
@@ -452,9 +619,12 @@ function wga_process_input($name, $email, $remember, $input_message, $contact_fo
 
         //echo __LINE__.":: contact_form: $contact_form\n";
         $verification_success = wga_send_verification_email($name, $email, $hash);
+
+		echo wga_console_log(__LINE__."wga:: remember:$remember, input:$input_message, contact_form:$contact_form");
     }
-    if ($contact_form==1 and (!empty($input_message))) { // and $input_message != "")) {
-        //echo __LINE__.":: contact_form: $contact_form\n";
+	echo wga_console_log(__LINE__."wga:: remember:$remember, input:$input_message, contact_form:$contact_form");
+
+    if ($contact_form==1 and (!empty($input_message))) { 
         $contact_success = wga_send_message($name, $email, $input_message);
     }
 }
@@ -557,30 +727,38 @@ function wga_send_verification_email($name, $email, $hash) {
 	return $email_response;
 }
 
-function wga_shortcode_popup() {
+add_shortcode( 'wga_popup_email_form', 'wga_sc_email_popup' );
+function wga_sc_email_popup() {
 	ob_start();
     $inpopup = 1; 
     $contact_form = 0;
     wga_html_form_code($inpopup, $contact_form);
 	return ob_get_clean();
 }
-add_shortcode( 'wga_popup_email_form', 'wga_shortcode_popup' );
 
-function wga_shortcode_on_page() {
+add_shortcode( 'wga_on_page_email_form', 'wga_sc_email_on_page' );
+function wga_sc_email_on_page() {
 	ob_start();
     $inpopup = 0;
     $contact_form = 0;
     wga_html_form_code($inpopup, $contact_form);
 	return ob_get_clean();
 }
-add_shortcode( 'wga_on_page_email_form', 'wga_shortcode_on_page' );
 
-function wga_shortcode_on_page_contact_form() {
+add_shortcode( 'wga_1st_contact_form', 'wga_sc_contact_form' );
+function wga_sc_contact_form() {
     ob_start();
     $inpopup = 0;
     $contact_form = 1;
     wga_html_form_code($inpopup, $contact_form);
 	return ob_get_clean();
 }
-add_shortcode( 'wga_1st_contact_form', 'wga_shortcode_on_page_contact_form' );
+
+add_shortcode( 'wga_pancake_email_form', 'wga_sc_pancake_email_form' );
+function wga_sc_pancake_email_form() {
+    ob_start();
+	wga_pancake_email_form(); 
+	return ob_get_clean();
+}
+
 ?>
