@@ -528,6 +528,12 @@ function wga_pancake_email_form() {
 	echo '	    border: 1px solid #DFDFDF; /* Small border around our input field */'.PHP_EOL;
 	echo '	    padding: 8px; /* Add some more space around our text */'.PHP_EOL;
 	echo '	}'.PHP_EOL;
+	echo '	#wrap .statusmsg {'.PHP_EOL;
+    echo '		font-size: 12px; /* Set message font size  */'.PHP_EOL;
+    echo '		padding: 3px; /* Some padding to make some more space for our text  */'.PHP_EOL;
+    echo '		background: #EDEDED; /* Add a background color to our status message   */'.PHP_EOL;
+    echo '		border: 1px solid #DFDFDF; /* Add a border arround our status message   */'.PHP_EOL;
+	echh '	}'.PHP_EOL;
 	echo '	</style>'.PHP_EOL;
 	echo '	<!-- start wrap div -->  '.PHP_EOL;
 	echo '	    <div id="wrap">'.PHP_EOL;
@@ -546,7 +552,7 @@ function wga_pancake_email_form() {
 	echo '	            <input type="text" name="email" value="'.$email.'" />'.PHP_EOL;
 	echo '	              '.PHP_EOL;
 	echo '	            <input type="submit" class="submit_button" value="Join" />'.PHP_EOL;
-	echo '				<p>'.$fullMsg.'</p>'.PHP_EOL;
+	echo '				<div class="statusmsg">'.$fullMsg.'</div>'.PHP_EOL;
 	echo '	        </form>'.PHP_EOL;
 	echo '	        <!-- end sign up form -->'.PHP_EOL;
 	echo '	          '.PHP_EOL;
