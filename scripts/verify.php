@@ -35,7 +35,7 @@
 </style>
     <!-- start header div --> 
     <div id="header">
-        <img width="600" hight="200" src=<?php echo '"'.site_url().'/wp-content/uploads/2020/12/LogoOregonOpenPrimaries.png"' ?> alt="Let ALL voters vote!"/><br><br>
+        <img width="600" height="200" src=<?php echo '"'.site_url().'/wp-content/uploads/2020/12/LogoOregonOpenPrimaries.png"' ?> alt="Let ALL voters vote!"/><br><br>
         <h2>Oregon Open Primaries Email Verification</h2>
     </div>
     <!-- end header div -->   
