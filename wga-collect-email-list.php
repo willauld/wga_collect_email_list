@@ -354,7 +354,7 @@ function wga_html_form_code($inpopup, $contact_form) {
 			echo '  <fieldset id="pinfo">'.PHP_EOL;
 			if (!empty($_POST['cf-post_handled']))  {
                 // FIXME something wrong here
-				echo __LINE__.":: Contact_form: $contact_form, Was_remembered: $was_remembered"; 
+				//echo __LINE__.":: Contact_form: $contact_form, Was_remembered: $was_remembered"; 
 				if (($contact_form == 0) or ($was_remembered == 1)) {
 		  			echo '<h2>Thank you!</h2><br>Please verify your email address by clicking the activation link that has been sent to your email.';
 				}
