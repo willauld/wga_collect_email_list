@@ -213,7 +213,7 @@ function wga_html_form_code($inpopup, $contact_form) {
 	//
 	// set for use in or out of a plugin
 	//
-	if (($_SERVER["REQUEST_METHOD"] == "POST") and (empty($_POST['post_handled'])))
+	if (($_SERVER["REQUEST_METHOD"] == "POST") and (empty($_POST['cf-post_handled'])))
 	{
 	  if (empty($_POST["cf-name"])) {
 	    $nameErr = "Name is required";
@@ -225,8 +225,8 @@ function wga_html_form_code($inpopup, $contact_form) {
 	    }
       }
       
-      if (!empty($_POST["remember"])) { // checkbox
-        if ($_POST["remember"] == "on") {
+      if (!empty($_POST["cf-remember"])) { // checkbox
+        if ($_POST["cf-remember"] == "on") {
 			$remember = 1;
 			$was_remembered = 1;
 		} else {
@@ -235,8 +235,8 @@ function wga_html_form_code($inpopup, $contact_form) {
 		}
       }
 
-      if (!empty($_POST["text"])) {
-          $input_message = wga_test_input($_POST["text"]);
+      if (!empty($_POST["cf-text"])) {
+          $input_message = wga_test_input($_POST["cf-text"]);
       }
   
 	  if (empty($_POST["cf-email"])) {
@@ -270,7 +270,7 @@ function wga_html_form_code($inpopup, $contact_form) {
         $input_message = "";
         $remember = 0;
 		
-		$_POST['post_handled'] = true;
+		$_POST['cf-post_handled'] = true;
 		
 		if ($inpopup == 1) {
 		  echo '<h2>Thank you!</h2><br>Please verify your email address by clicking the activation link that has been sent to your email.';
@@ -286,7 +286,7 @@ function wga_html_form_code($inpopup, $contact_form) {
     //
 	// form execution
 	//
-	if (($inpopup == 0) or empty($_POST['post_handled'])) {
+	if (($inpopup == 0) or empty($_POST['cf-post_handled'])) {
 		echo '<style>'.PHP_EOL;
 		
 		echo '.error, .required {'.PHP_EOL;
@@ -352,7 +352,7 @@ function wga_html_form_code($inpopup, $contact_form) {
 		echo '<form action="' . esc_url( $_SERVER['REQUEST_URI'] ) . '" method="post">'.PHP_EOL;
 		if ($inpopup == 0) {
 			echo '  <fieldset id="pinfo">'.PHP_EOL;
-			if (!empty($_POST['post_handled']))  {
+			if (!empty($_POST['cf-post_handled']))  {
                 // FIXME something wrong here
 				echo __LINE__.":: Contact_form: $contact_form, Was_remembered: $was_remembered"; 
 				if (($contact_form == 0) or ($was_remembered == 1)) {
@@ -379,13 +379,13 @@ function wga_html_form_code($inpopup, $contact_form) {
 		echo '      </p>'.PHP_EOL;
 		if ($contact_form==1) {
         if ($remember == 1){
-		echo '		<p><input type="checkbox" id="remember" name="remember" checked>'.PHP_EOL;
+		echo '		<p><input type="checkbox" id="remember" name="cf-remember" checked>'.PHP_EOL;
         } else {
-        echo '		<p><input type="checkbox" id="remember" name="remember" >'.PHP_EOL;
+        echo '		<p><input type="checkbox" id="remember" name="cf-remember" >'.PHP_EOL;
         }
 		echo '		<label for="remember">Join Mailing List?</label></p>'.PHP_EOL;
 		echo '		<p><label class="reg_label" for="text">Message: </label>'.PHP_EOL;
-		echo '		<textarea name="text" id="text" cols="20" rows="10" >'.$input_message.'</textarea>'.PHP_EOL;
+		echo '		<textarea name="cf-text" id="text" cols="20" rows="10" >'.$input_message.'</textarea>'.PHP_EOL;
 		echo '		</p>'.PHP_EOL;
 		}
 		echo '	  </fieldset>'.PHP_EOL;
@@ -397,7 +397,7 @@ function wga_html_form_code($inpopup, $contact_form) {
 		
 	}
 	/*
-	if (!empty($_POST['post_handled'])) {
+	if (!empty($_POST['cf-post_handled'])) {
         if (true) {
 		echo '<script>'.PHP_EOL;
 		echo 'if ( window.history.replaceState ) {'.PHP_EOL;
@@ -426,21 +426,26 @@ function wga_pancake_email_form() {
 	}else{
 		$page="?";
 	}
+    echo '<!-- Posted1:';
+    if ($_POST) {
+        echo var_dump($_POST);
+    }
+    echo '-->';
 
 	echo wga_console_log( __LINE__." WGA:: page:$page, fullMsg: $fullMsg" );
 	//
 	// set for use in or out of a plugin
 	//
-	if (($_SERVER["REQUEST_METHOD"] == "POST") and (empty($_POST['post_handled'])))
+	if (($_SERVER["REQUEST_METHOD"] == "POST") and (empty($_POST['wga-post_handled'])))
 	{
-	  if (empty($_POST["name"]) or empty($_POST["email"])) {
+	  if (empty($_POST["wga-name"]) or empty($_POST["wga-email"])) {
 	    $Err = "both fields are required";
 	  } 
-	  if (!empty($_POST["name"])) {
-	    $name = wga_test_input($_POST["name"]);
+	  if (!empty($_POST["wga-name"])) {
+	    $name = wga_test_input($_POST["wga-name"]);
       }
-	  if (!empty($_POST["email"])) {
-	    $email = wga_test_input($_POST["email"]);
+	  if (!empty($_POST["wga-email"])) {
+	    $email = wga_test_input($_POST["wga-email"]);
 	    /* check if e-mail address is well-formed */
 	    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 	      $emailErr = "Invalid email format";
@@ -470,7 +475,7 @@ function wga_pancake_email_form() {
         	
         $name = $email = "";
 		
-		$_POST['post_handled'] = true;
+		$_POST['wga-post_handled'] = true;
 		
 		$fullMsg = '<h2>Thank you!</h2><br>Please verify your email address by clicking the activation link that has been sent to your email.';
 
@@ -521,19 +526,26 @@ function wga_pancake_email_form() {
 	echo '	    background: #F9F9F9; /* Set button background */'.PHP_EOL;
 	echo '	    border: 1px solid #DFDFDF; /* Small border around our submit button */'.PHP_EOL;
 	echo '	    padding: 8px; /* Add some more space around our button text */'.PHP_EOL;
+    echo '      border-radius: 25%;'.PHP_EOL;
 	echo '	}'.PHP_EOL;
 	echo '	  '.PHP_EOL;
 	echo '	input{'.PHP_EOL;
 	echo '	    font: normal 16px Georgia; /* Set font for our input fields */'.PHP_EOL;
 	echo '	    border: 1px solid #DFDFDF; /* Small border around our input field */'.PHP_EOL;
 	echo '	    padding: 8px; /* Add some more space around our text */'.PHP_EOL;
-	echo '	}'.PHP_EOL;
+    echo '	}'.PHP_EOL;
+    echo '  #innerform {'.PHP_EOL;
+	echo '	    margin-bottom: 10px; '.PHP_EOL;
+//    echo '      padding: 30px;'.PHP_EOL;
+    echo '	}'.PHP_EOL;
 	echo '	#wrap .statusmsg {'.PHP_EOL;
+	echo '	    margin-top: 20px; '.PHP_EOL;
     echo '		font-size: 12px; /* Set message font size  */'.PHP_EOL;
     echo '		padding: 3px; /* Some padding to make some more space for our text  */'.PHP_EOL;
     echo '		background: #EDEDED; /* Add a background color to our status message   */'.PHP_EOL;
     echo '		border: 1px solid #DFDFDF; /* Add a border arround our status message   */'.PHP_EOL;
-	echh '	}'.PHP_EOL;
+	echo '		color: red; /*#464646; /* Set msg text color */'.PHP_EOL;
+    echo '	}'.PHP_EOL;
 	echo '	</style>'.PHP_EOL;
 	echo '	<!-- start wrap div -->  '.PHP_EOL;
 	echo '	    <div id="wrap">'.PHP_EOL;
@@ -545,20 +557,22 @@ function wga_pancake_email_form() {
 	echo '	          '.PHP_EOL;
 	echo '	        <!-- start sign up form -->  '.PHP_EOL;
 	echo '			<form action="' . esc_url( $_SERVER['REQUEST_URI'] ) . '" method="post">'.PHP_EOL;
-	//echo '	        <form action="" method="post">'.PHP_EOL;
-	echo '	            <label for="name">Name:</label>'.PHP_EOL;
-	echo '	            <input type="text" name="name" value="'.$name.'" />'.PHP_EOL;
-	echo '	            <label for="email">Email:</label>'.PHP_EOL;
-	echo '	            <input type="text" name="email" value="'.$email.'" />'.PHP_EOL;
+    //echo '	        <form action="" method="post">'.PHP_EOL;
+    echo '              <div id="innerform">'.PHP_EOL;
+	echo '	                <label for="name">Name:</label>'.PHP_EOL;
+	echo '	                <input type="text" id="name" name="wga-name" value="'.$name.'" />'.PHP_EOL;
+	echo '	                <label for="email">Email:</label>'.PHP_EOL;
+	echo '	                <input type="text" id="email" name="wga-email" value="'.$email.'" />'.PHP_EOL;
 	echo '	              '.PHP_EOL;
-	echo '	            <input type="submit" class="submit_button" value="Join" />'.PHP_EOL;
+	echo '	                <input type="submit" class="submit_button" value="Join Mailing List" />'.PHP_EOL;
+    echo '              <div>'.PHP_EOL;
 	echo '				<div class="statusmsg">'.$fullMsg.'</div>'.PHP_EOL;
 	echo '	        </form>'.PHP_EOL;
 	echo '	        <!-- end sign up form -->'.PHP_EOL;
 	echo '	          '.PHP_EOL;
 	echo '	    </div>'.PHP_EOL;
 		echo wga_console_log( __LINE__." WGA:: page:$page, fullMsg: $fullMsg" ); 
-	if (false and !empty($_POST['post_handled'])) {
+	if (false and !empty($_POST['wga-post_handled'])) {
 		echo '<script>'.PHP_EOL;
 		echo 'if ( window.history.replaceState ) {'.PHP_EOL;
 		echo '	window.history.replaceState( null, null, window.location.href );'.PHP_EOL;

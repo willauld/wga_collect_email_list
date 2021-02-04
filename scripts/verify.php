@@ -26,13 +26,16 @@
 <body>
 <style>
 	#wrap .statusmsg{
-		font-size: 12px; /* Set message font size  */
-		padding: 3px; /* Some padding to make some more space for our text  */
+		font-size: 20px; /* Set message font size  */
+		padding: 5px; /* Some padding to make some more space for our text  */
 		background: #EDEDED; /* Add a background color to our status message   */
 		border: 1px solid #DFDFDF; /* Add a border arround our status message   */
+        color: red;
 	}	
+</style>
     <!-- start header div --> 
     <div id="header">
+        <img width="600" hight="200" src=<?php echo '"'.site_url().'/wp-content/uploads/2020/12/LogoOregonOpenPrimaries.png"' ?> alt="Let ALL voters vote!"/><br><br>
         <h2>Oregon Open Primaries Email Verification</h2>
     </div>
     <!-- end header div -->   
