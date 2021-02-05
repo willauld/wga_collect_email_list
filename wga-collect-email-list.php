@@ -3,7 +3,7 @@
    Plugin Name: WGA collect email list
    Plugin URI: 
    description: a plugin to collect email addresses and create a list in the database
-   Version: 1.0
+   Version: 1.1
    Author: Will Auld (WGA)
    Author URI: 
    License: GPL2
