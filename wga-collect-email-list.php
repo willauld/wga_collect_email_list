@@ -346,10 +346,10 @@ function wga_html_form_code($inpopup, $contact_form) {
 		echo '  font-size: 0.75em;'.PHP_EOL;
 		echo '  color: #760000;'.PHP_EOL;
 		echo '}'.PHP_EOL;
-		
-		echo '</style>'.PHP_EOL;
+        echo '</style>'.PHP_EOL;
 
-		echo '<form action="' . esc_url( $_SERVER['REQUEST_URI'] ) . '" method="post">'.PHP_EOL;
+        echo '<a id="comboform"/><br></a>'.PHP_EOL;
+	    echo '<form action="'.site_url(). '/' . esc_url( $_SERVER['REQUEST_URI'] ) . '/#comboform" method="post">'.PHP_EOL;
 		if ($inpopup == 0) {
 			echo '  <fieldset id="pinfo">'.PHP_EOL;
 			if (!empty($_POST['cf-post_handled']))  {
@@ -602,8 +602,9 @@ function wga_pancake_email_form() {
 	echo '	        <!-- stop php code -->'.PHP_EOL;
 	echo '	      '.PHP_EOL;
 	echo '	          '.PHP_EOL;
-	echo '	        <!-- start sign up form -->  '.PHP_EOL;
-	echo '			<form action="' . esc_url( $_SERVER['REQUEST_URI'] ) . '" method="post">'.PHP_EOL;
+    echo '	        <!-- start sign up form -->  '.PHP_EOL;
+    echo '          <a id="pancakeform"/><br></a>'.PHP_EOL;
+	                echo '<form action="'.site_url(). '/' . esc_url( $_SERVER['REQUEST_URI'] ) . '/#pancakeform" method="post">'.PHP_EOL;
     //echo '	        <form action="" method="post">'.PHP_EOL;
     echo '              <div id="innerform" class="flex-container">'.PHP_EOL;
 	echo '					<div>'.PHP_EOL;
