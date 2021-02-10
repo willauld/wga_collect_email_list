@@ -55,13 +55,14 @@
 				if ($subscribe == 'join') {
 					$query   = $wpdb->prepare( 
 						//"SELECT email, is_verified, vhash FROM {$wpdb->prefix}wga_contact_list WHERE email ='".$email."' AND vhash='".$hash."' AND is_verified='0'"
-						"SELECT email, is_verified, vhash FROM {$wpdb->prefix}wga_contact_list WHERE email =%s AND vhash=%s AND is_verified=0", $email, $hash 
+						"SELECT id, email, is_verified, vhash FROM {$wpdb->prefix}wga_contact_list WHERE email =%s AND vhash=%s AND is_verified=0", $email, $hash 
 					);
 					$results = $wpdb->get_results( $query );
 					$match = count($results);
 
 					if($match > 0){
 						// We have a match, record verification
+						$id = $wpdb->get_var(NULL,0,0);
 						$updated_at = current_time( 'mysql' );
 						if ($wpdb->update(
 							"{$wpdb->prefix}wga_contact_list",
@@ -70,6 +71,7 @@
 								'updated_at' => $updated_at,
 							),
 							array( 
+								'id' => "$id",
 								'email' => "$email",
 								'vhash' => "$hash",
 								'is_verified' => '0',
@@ -88,7 +90,43 @@
 					}
 				}
 				elseif ($subscribe == 'unsubscribe') {
-					wp_die("not implemented yet");
+					//wp_die("not implemented yet");
+
+					$query   = $wpdb->prepare( 
+						//"SELECT email, is_verified, vhash FROM {$wpdb->prefix}wga_contact_list WHERE email ='".$email."' AND vhash='".$hash."' AND is_verified='0'"
+						"SELECT id, email, is_verified, vhash FROM {$wpdb->prefix}wga_contact_list WHERE email =%s AND vhash=%s AND is_verified=1", $email, $hash 
+					);
+					$results = $wpdb->get_results( $query );
+					$match = count($results);
+
+					if($match > 0){
+						// We have a match, unsubscribe if user confirms
+						//
+						// Add confirmation form here
+						//
+						$id = $wpdb->get_var(NULL,0,0);
+						$updated_at = current_time( 'mysql' );
+						if ($wpdb->update(
+							"{$wpdb->prefix}wga_contact_list",
+							array( 
+								'unsubscribed' => '1',
+								'updated_at' => $updated_at,
+							),
+							array( 
+								'id' => "$id",
+								'email' => "$email",
+								'vhash' => "$hash",
+								'is_verified' => '1',
+							)
+						) 
+						== 1) 
+						{
+							echo '<div class="statusmsg">Your email has been unsubscribed, Thank you.</div>';
+						} else {
+							echo '<div class="statusmsg">Your email could not be unsubscribed, there was a problem updating your record. Please notify the admin. Thank you.</div>';
+
+						}
+					}
 				}
 				else {
 					// Invalid approah
