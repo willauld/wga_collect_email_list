@@ -247,10 +247,13 @@ function wga_html_form_code($inpopup, $contact_form) {
 	    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 	      $emailErr = "Invalid email format";
 	    } elseif ($contact_form==0 or $remember==1) {
+            /*
 			$query   = $wpdb->prepare( 
 				"SELECT * FROM {$wpdb->prefix}wga_contact_list WHERE email = %s", $email 
 			);
-			$results = $wpdb->get_results( $query );
+            $results = $wpdb->get_results( $query );
+            */
+            $results = wga_is_active_email($email);
 
 			if ( count( $results ) > 0 ) {
 				$emailErr = "Email already exits";
@@ -450,10 +453,13 @@ function wga_pancake_email_form() {
 	    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 	      $emailErr = "Invalid email format";
 	    } else {
+            /*
 			$query   = $wpdb->prepare( 
 				"SELECT * FROM {$wpdb->prefix}wga_contact_list WHERE email = %s", $email 
 			);
-			$results = $wpdb->get_results( $query );
+            $results = $wpdb->get_results( $query );
+            */
+            $results = wga_is_active_email($email);
 
 			if ( count( $results ) > 0 ) {
 				$emailErr = "Email already exits";
@@ -654,6 +660,16 @@ function wga_console_log( $message ) {
     return "<script>console.log('{$message}')</script>";
 }
 
+function wga_is_active_email($email_to_check) {
+    global $wpdb;
+        //$record = $wpdb->get_results("SELECT * FROM $table_name WHERE (meta_key = 'mfn-post-link1' AND meta_value = '". $from ."')");
+	$query   = $wpdb->prepare( 
+		"SELECT * FROM {$wpdb->prefix}wga_contact_list WHERE email = %s AND is_verified = 1 AND unsubscribed = 0", $email_to_check 
+	);
+    $results = $wpdb->get_results( $query );
+    return $results;
+}
+
 function wga_process_input($name, $email, $remember, $input_message, $contact_form) {
     global $wpdb;
     $source = "?";
@@ -663,21 +679,58 @@ function wga_process_input($name, $email, $remember, $input_message, $contact_fo
 	echo wga_console_log(__LINE__."wga:: remember:$remember, input:$input_message, contact_form:$contact_form");
 
     if ($contact_form == 0 or $remember == 1) {
+		//
+		// Add or update db record
+		//
 		$a = explode(" ", $name, 2);
 		$first_name = $a[0];
-		$last_name = $a[1];
-		//
-		// Add db record
-		//
-		$created_at = current_time( 'mysql' );
-		$hash = md5( rand(0,1000) ); // Generate random 32 character hash
-		// Example output: f4552671f8909587cf485ea990207f3b
+        $last_name = $a[1];
+		$table_name = $wpdb->prefix . 'wga_contact_list';
+
+        //$record = $wpdb->get_results("SELECT * FROM $table_name WHERE (meta_key = 'mfn-post-link1' AND meta_value = '". $from ."')");
+
+        $record = $wpdb->get_results("SELECT * FROM $table_name WHERE (email =  '". $email ."')");
+
+        //print_r($record);
+        echo wga_console_log(__LINE__."wga_record:: ".print_r($record,true)); 
+
+        if (count($record)>0) {
+            $id = $wpdb->get_var(NULL, 0, 0); //'id'
+            $created_at = $wpdb->get_var(NULL, 6, 0); //'created_at'
+		    $updated_at = current_time( 'mysql' );
+		    $hash = $wpdb->get_var(NULL, 9, 0); //'vhash';
+        } else {
+            $id = NULL;
+            $created_at = current_time( 'mysql' );
+            $updated_at = NULL;
+		    $hash = md5( rand(0,1000) ); // Generate random 32 character hash
+		    // Example output: f4552671f8909587cf485ea990207f3b
+        }
+        // use replace insted of insert 
+        $wpdb->replace( 
+            //string $table, array $data, array|string $format = null 
+			$table_name, 
+			array( 
+                'id' => $id,
+				'first_name' => $first_name, 
+				'last_name' => $last_name, 
+				'email' => $email,
+                'source' => $source,
+                'unsubscribed' => "0",
+                'created_at' => $created_at,
+                'updated_at' => $updated_at,
+                'is_verified' => "0",
+				'vhash' => $hash, 
+            ) 
+         );
+
 
 		//echo __LINE__.":: contact_form: $contact_form Remember: $remember\n";
 
 		//
 		// Add to db and send verification email
-		//
+        //
+        /*
 		$table_name = $wpdb->prefix . 'wga_contact_list';
 		$wpdb->insert( 
 			$table_name, 
@@ -685,11 +738,14 @@ function wga_process_input($name, $email, $remember, $input_message, $contact_fo
 				'first_name' => $first_name, 
 				'last_name' => $last_name, 
 				'email' => $email,
-				'source' => $source,
-				'created_at' => $created_at,
+                'source' => $source,
+                'unsubscribed' => "0",
+                'created_at' => $created_at,
+                'is_verified' => "0",
 				'vhash' => $hash, 
 			) 
-		);
+        );
+        */
 
         //echo __LINE__.":: contact_form: $contact_form\n";
         $verification_success = wga_send_verification_email($name, $email, $hash);
