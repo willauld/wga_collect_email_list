@@ -46,44 +46,53 @@
         <?php
 			global $wpdb;
           
-			if(isset($_GET['email']) && !empty($_GET['email']) AND isset($_GET['vhash']) && !empty($_GET['vhash'])){
+			if(isset($_GET['email']) && !empty($_GET['email']) AND isset($_GET['vhash']) && !empty($_GET['vhash']) AND isset($_GET['subscribe']) && !empty($_GET['subscribe'])){
 				// Verify data
+				$subscribe = wga1_test_input($_GET['subscribe']); // Set email variable
 				$email = wga1_test_input($_GET['email']); // Set email variable
 				$hash = wga1_test_input($_GET['vhash']); // Set hash variable
 							  
-							  
-				$query   = $wpdb->prepare( 
-					//"SELECT email, is_verified, vhash FROM {$wpdb->prefix}wga_contact_list WHERE email ='".$email."' AND vhash='".$hash."' AND is_verified='0'"
-					"SELECT email, is_verified, vhash FROM {$wpdb->prefix}wga_contact_list WHERE email =%s AND vhash=%s AND is_verified=0", $email, $hash 
-				);
-				$results = $wpdb->get_results( $query );
-				$match = count($results);
+				if ($subscribe == 'join') {
+					$query   = $wpdb->prepare( 
+						//"SELECT email, is_verified, vhash FROM {$wpdb->prefix}wga_contact_list WHERE email ='".$email."' AND vhash='".$hash."' AND is_verified='0'"
+						"SELECT email, is_verified, vhash FROM {$wpdb->prefix}wga_contact_list WHERE email =%s AND vhash=%s AND is_verified=0", $email, $hash 
+					);
+					$results = $wpdb->get_results( $query );
+					$match = count($results);
 
-				if($match > 0){
-					// We have a match, record verification
-					$updated_at = current_time( 'mysql' );
-					if ($wpdb->update(
-						"{$wpdb->prefix}wga_contact_list",
-						array( 
-        					'is_verified' => '1',
-        					'updated_at' => $updated_at,
-    					),
-						array( 
-        					'email' => "$email",
-    					    'vhash' => "$hash",
-							'is_verified' => '0',
-    					)
-					) 
-					== 1) 
-					{
-						echo '<div class="statusmsg">Your email has been verified, Thank you.</div>';
-					} else {
-						echo '<div class="statusmsg">Your email has been verified, but there was a problem updating your record. Please notify the admin. Thank you.</div>';
+					if($match > 0){
+						// We have a match, record verification
+						$updated_at = current_time( 'mysql' );
+						if ($wpdb->update(
+							"{$wpdb->prefix}wga_contact_list",
+							array( 
+								'is_verified' => '1',
+								'updated_at' => $updated_at,
+							),
+							array( 
+								'email' => "$email",
+								'vhash' => "$hash",
+								'is_verified' => '0',
+							)
+						) 
+						== 1) 
+						{
+							echo '<div class="statusmsg">Your email has been verified, Thank you.</div>';
+						} else {
+							echo '<div class="statusmsg">Your email has been verified, but there was a problem updating your record. Please notify the admin. Thank you.</div>';
 
+						}
+					}else{
+						// No match -> invalid url or email has already been verified
+						echo '<div class="statusmsg">The url is either invalid or you already verified your email.</div>';
 					}
-				}else{
-					// No match -> invalid url or email has already been verified
-					echo '<div class="statusmsg">The url is either invalid or you already verified your email.</div>';
+				}
+				elseif ($subscribe == 'unsubscribe') {
+					wp_die("not implemented yet");
+				}
+				else {
+					// Invalid approah
+					echo '<div class="statusmsg">Invalid approach, please use the link that has been send to your email.</div>';
 				}
 							  
 			}else{

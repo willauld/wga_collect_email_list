@@ -722,7 +722,7 @@ function wga_process_input($name, $email, $remember, $input_message, $contact_fo
                 'is_verified' => "0",
 				'vhash' => $hash, 
             ) 
-         );
+        );
 
 
 		//echo __LINE__.":: contact_form: $contact_form Remember: $remember\n";
@@ -823,13 +823,13 @@ function wga_send_verification_email($name, $email, $hash) {
                             <tr>
                                 <td><td>
                         <div><!--[if mso]>
-                            <v:roundrect            xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="'.site_url().'/verify.php?email='.$email.'&vhash='.$hash.'" style="height:50px;v-text-anchor:middle;width:350px;" arcsize="8%" strokecolor="#262661" fillcolor="#262661">
+                            <v:roundrect            xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="'.site_url().'/verify.php?subscribe=join&email='.$email.'&vhash='.$hash.'" style="height:50px;v-text-anchor:middle;width:350px;" arcsize="8%" strokecolor="#262661" fillcolor="#262661">
                                 <w:anchorlock/>
                                 <center style="color:#FFEA0F;font-family:sans-serif;font-size:13px;font-weight:bold;">
                                     Yes, subscribe me to Oregon Open Primaries!
                                 </center>
                             </v:roundrect>
-                            <![endif]--><a href="'.site_url().'/verify.php?email='.$email.'&vhash='.$hash.'" 
+                            <![endif]--><a href="'.site_url().'/verify.php?subscribe=join&email='.$email.'&vhash='.$hash.'" 
                                 style="background-color:#262661;border:1px solid #262661;border-radius:4px;color:#FFEA0F;display:inline-block;font-family:sans-serif;font-size:13px;font-weight:bold;line-height:50px;text-align:center;text-decoration:none;width:350px;-webkit-text-size-adjust:none;mso-hide:all;">
                                     Yes, subscribe me to Oregon Open Primaries!
                                 </a>
