@@ -83,6 +83,35 @@ function wga_collect_email_list_activation() {
     }
 }
 
+ 
+//
+// Add admin functionality
+//
+add_action('admin_menu', 'wga_plugin_setup_menu');
+
+function wga_plugin_setup_menu(){
+    add_menu_page( 'WGA Email Collection Plugin Page', 'WGA Email Plugin', 'manage_options', basename(__FILE__), 'wga_admin_init', 'dashicons-tickets', 66 );
+	/**/
+	if(function_exists('add_submenu_page')){
+		add_submenu_page(basename(__FILE__), 'Options', 'Options', 'manage_options', basename(__FILE__), 'wga_admin_init');
+		add_submenu_page(basename(__FILE__), 'Manage', 'Manage',  'manage_options', 'wga-collect-email-list/wga-collect-email-admin.php');
+		add_submenu_page(basename(__FILE__), 'Donate', 'Donate',  'manage_options', 'wga-collect-email-list/wga-collect-email-donate.php');
+		/*
+		*/
+	}
+	/**/
+}
+
+// Should move this function to its own file
+function wga_admin_init(){
+	?>
+	<div class="wrap">
+		<h2>Welcome To My Plugin</h2>
+	</div>
+	<?php
+    //echo "<h1>Hello World!</h1>";
+}
+
 global $wga_db_version;
 $wga_db_version = '1.0';
 
@@ -164,6 +193,10 @@ function wga_collect_email_list_deactivation() {
 	check_admin_referer( "deactivate-plugin_{$plugin}" );
 	
   	// Deactivation rules here
+
+	// remove actions?
+	// add_action('admin_menu', 'wga_plugin_setup_menu');
+    // add_menu_page( 'WGA Email Collection Plugin Page', 'WGA Email Plugin', 'manage_options', 'test-plugin', 'wga_admin_init' );
 	$dest1dir = __DIR__.'/../../../';
 	$destfile = $dest1dir.'verify.php';
 
