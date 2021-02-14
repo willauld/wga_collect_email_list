@@ -168,6 +168,49 @@ function wga_install_data() {
 }
 //register_activation_hook( __FILE__, 'wga_install_data' );// only for testing
 
+function get_email_list() {
+	/*
+		id int(10) NOT NULL AUTO_INCREMENT,
+		first_name varchar(50),
+		last_name varchar(50),
+		email varchar(50) NOT NULL,
+		source varchar(50),
+		unsubscribed tinyint(1) DEFAULT 0 NOT NULL,
+		created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+		updated_at datetime,
+		is_verified tinyint(1) DEFAULT 0,
+        vhash varchar(32) NOT NULL,
+		UNIQUE KEY id (id)
+		*/
+	global $wpdb;
+	$get_all = $wpdb->prepare(
+		"SELECT * FROM {$wpdb->prefix}wga_contact_list" 
+	);
+    $results = $wpdb->get_results( $get_all );
+
+	$list = array();
+	$i = 0;
+
+	if ($results) {
+		foreach ($results as $result) {
+			$list[$i]["id"] = intval($result->id);
+			$list[$i]["first_name"] = stripslashes($result->first_name);
+			$list[$i]["last_name"] = stripslashes($result->last_name);
+			$list[$i]["email"] = stripslashes($result->email);
+			$list[$i]["source"] = stripslashes($result->source);
+			$list[$i]["unsubscribed"] = intval($result->unsubscribed);
+			$list[$i]["created_at"] = $result->created_at;
+			$list[$i]["updated_at"] = $result->updated_at;
+			$list[$i]["is_verified"] = intval($result->is_verified);
+			$list[$i]["vhash"] = stripslashes($result->vhash);
+
+            $i++;
+		}
+	}
+	return $list;
+	//return $results;
+}
+
 //
 // Plugin deactivation: wga-collect-email-list
 //
@@ -693,7 +736,7 @@ function wga_is_active_email($email_to_check) {
 
 function wga_process_input($name, $email, $remember, $input_message, $contact_form) {
     global $wpdb;
-    $source = "?";
+    $source = "Web";
 
     //echo __LINE__.":: contact_form: $contact_form Remember: $remember\n";
 	
