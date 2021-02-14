@@ -11,6 +11,31 @@ function wga_admin_init(){
 	echo '</div>';
 }
 
+function get_email_counts($records) {
+        $all = 0;
+        $active = 0;
+        $verified = 0;
+        $unsubscribed = 0;
+	foreach ($records as $record) {
+        $all++;
+        if ($record["is_verified"] == 1) {
+            $verified++;
+        }
+        if ($record["unsubscribed"] == 1) {
+            $unsubscribed++;
+        }
+        if (($record["is_verified"] == 1) && ($record["unsubscribed"] == 0)) {
+            $active++;
+        }
+    }
+    return array(
+        'all' => $all,
+        'active' => $active,
+        'verified' => $verified, 
+        'unsubscribed' => $unsubscribed,
+    );
+}
+
 function wga_management() {
     // Manage menu
     if(!current_user_can('manage_options')) {
@@ -19,6 +44,7 @@ function wga_management() {
     echo '<h2> WGA Collect Email List Manage Page </h2>';
 
     $list = get_email_list(); 
+    $count_array = get_email_counts($list);
    
     echo '<style>';
     echo 'div.ex3 {';
@@ -46,8 +72,8 @@ function wga_management() {
     //echo '  border: 1px solid black;';
     //echo '}';
     echo '</style>';
-    //echo '<hr>';A
-    echo '<p><h3>Table contains '.count($list).' records</h3></p>';
+    //echo '<hr>';
+    echo '<p><h3>Table contains '.count($list).' records, '.$count_array['active'].' active, '.$count_array['verified'].' verified, '.$count_array['unsubscribed'].' unsubscribed </h3></p>';
     echo '<div class="ex3" style="overflow-x:auto;">';
     echo '<table style="width:100%">';
     echo '  <tr>';
