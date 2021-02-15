@@ -14,12 +14,12 @@ function wga_admin_init(){
 function get_email_counts($records) {
         $all = 0;
         $active = 0;
-        $verified = 0;
+        $unverified = 0;
         $unsubscribed = 0;
 	foreach ($records as $record) {
         $all++;
-        if ($record["is_verified"] == 1) {
-            $verified++;
+        if ($record["is_verified"] == 0) {
+            $unverified++;
         }
         if ($record["unsubscribed"] == 1) {
             $unsubscribed++;
@@ -31,7 +31,7 @@ function get_email_counts($records) {
     return array(
         'all' => $all,
         'active' => $active,
-        'verified' => $verified, 
+        'unverified' => $unverified, 
         'unsubscribed' => $unsubscribed,
     );
 }
@@ -73,7 +73,28 @@ function wga_management() {
     //echo '}';
     echo '</style>';
     //echo '<hr>';
-    echo '<p><h3>Table contains '.count($list).' records, '.$count_array['active'].' active, '.$count_array['verified'].' verified, '.$count_array['unsubscribed'].' unsubscribed </h3></p>';
+    echo '<p><h3>Table contains '.count($list).' records, '.$count_array['active'].' active, '.$count_array['unverified'].' unverified, '.$count_array['unsubscribed'].' unsubscribed </h3></p>';
+
+	echo '<div class="container">';
+	echo '  <h2>Display records:</h2>';
+	echo '  <form action="'.site_url(). '/' . esc_url( $_SERVER['REQUEST_URI'] ) . ' method="post">'.PHP_EOL;
+	//echo '  <form>';
+	echo '    <label for="all" class="radio-inline">';
+	echo '      <input id="all" type="radio" name="filterrecords" value="all" onChange="this.form.submit();" checked>All';
+	echo '    </label>';
+	echo '    <label for="active" class="radio-inline">';
+	echo '      <input id="active" type="radio" name="filterrecords" value="active" onChange="this.form.submit();">Active';
+	echo '    </label>';
+	echo '    <label for="unverified" class="radio-inline">';
+	echo '      <input id="unverified" type="radio" name="filterrecords" value="unverified" onChange="this.form.submit();">Unverified';
+	echo '    </label>';
+	echo '    <label for="unsubscribed" class="radio-inline">';
+	echo '      <input id="unsubscribed" type="radio" name="filterrecords" value="unsubscribed" onChange="this.form.submit();">Unsubscribed';
+	echo '    </label>';
+	echo '  </form>';
+	echo '</div><br>';
+
+
     echo '<div class="ex3" style="overflow-x:auto;">';
     echo '<table style="width:100%">';
     echo '  <tr>';
