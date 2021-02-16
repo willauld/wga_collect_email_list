@@ -169,7 +169,7 @@ function wga_admin_campaign() {
     if(!current_user_can('manage_options')) {
 	    die('Access Denied');
     }
-    echo '<h1> Donate page </h1>';
+    echo '<h1> Campaign page </h1>';
 }
 
 ?>
