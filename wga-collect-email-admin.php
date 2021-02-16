@@ -41,6 +41,75 @@ function get_email_counts($records) {
     );
 }
 
+/**
+* The full correct version without any issues.
+* It works in MSExcel(2013 and newer), WPS office, Google Sheet online and Openoffice.
+* Last test on 2 July 2019
+*/
+function csv_download_filtered_table($filterrecords, $list) {
+   
+    $header = 'AppleRinquest Shop,Thailand';   // the data will show in 2 cells
+    $content = '"' . 'Date:July2,2019' . '"';  // the data will show in 1 cell. we use double quote around the text in order to print out the comma without split the cell.
+    $content .= 'Product title:,Ring001';
+    $content .= 'Price per piece:,' . '"' . '150,000 bath' . '"';  // the data will show in 2 cells.
+    $footer = html_entity_decode( 'Copyright  © AppleRinquest Shop limited.' , ENT_QUOTES, 'UTF-8');  // add html_entity_decode() to decode the HTML entity from the text if any.
+   
+    // # add MIME types at the header
+    header('Content-Type: text/csv; charset=UTF-8;');  // tell the browser that this is the CSV file and encode UTF8.
+    header('Content-Disposition: attachment; filename="'. "wga-email-list-" . time() .'.csv"');    // tell the browser to let the viewers can download the file with the default filename as provided.
+    
+    // # to protect the MSExcel(2013 and older version) replaces the accent marks to the question mark(?)
+    // I add these 3 byte UTF8 here before print out the first line to CSV file.
+    echo chr(0xEF);
+    echo chr(0xBB);
+    echo chr(0xBF);
+    
+    // # print out your data
+    echo $header;
+    echo "\n";  // add new line
+    echo "\n";  // add new line
+
+    echo 'ID,First Name,Last Name,Email,Source,Unsubscribed,Created_at,Updated_at,Is Verified?,Hash\n';
+
+	foreach ($list as $record) {
+        $dorecord = 0;
+        if ($filterrecords == "all") {
+            $dorecord = 1;
+        } elseif ($filterrecords == "active") {
+	        if (($record["is_verified"] == 1) && ($record["unsubscribed"] == 0)){
+                $dorecord = 1;
+            } 
+        } elseif ($filterrecords == "unverified") {
+	        if ($record["is_verified"] == 0) {
+                $dorecord = 1;
+            }
+        } elseif ($filterrecords == "unsubscribed") {
+	        if ($record["unsubscribed"] == 1) {
+                $dorecord = 1;
+            }
+        }
+        if ($dorecord == 1) { 
+            // Add quote around each field in case they have inbedded commas
+	        echo $record["id"].",";
+	        echo $record["first_name"].",";
+	        echo $record["last_name"].",";
+	        echo $record["email"].",";
+	        echo $record["source"].",";
+	        echo $record["unsubscribed"].",";
+	        echo $record["created_at"].",";
+	        echo $record["updated_at"].",";
+	        echo $record["is_verified"].",";
+	        echo $record["vhash"]."\n";
+        }
+    }
+
+    echo "\n";  // add new line
+    echo "\n";  // add new line    
+    //echo $footer;
+    exit; // add the exit or die() after the last print out content to the CSV file.
+          // otherwise, you may see all the current HTML code will print out to the CSV file too.
+}
+
 function wga_admin_manage() {
     // Manage menu
     $filterrecords = "all";
@@ -48,16 +117,22 @@ function wga_admin_manage() {
     if(!current_user_can('manage_options')) {
 	    die('Access Denied');
     }
-	if ($_SERVER["REQUEST_METHOD"] == "POST") {
-	    if (!empty($_POST["filterrecords"])) {
-            $filterrecords = sanitize_text_field($_POST["filterrecords"]);
-        }
-    }
 
     $list = get_email_list(); 
     $count_array = get_email_counts($list);
    
+	if ($_SERVER["REQUEST_METHOD"] == "POST") {
+	    if (!empty($_POST["filterrecords"])) {
+            $filterrecords = sanitize_text_field($_POST["filterrecords"]);
+        }
+        if (!empty($_POST["downloadtable"])) {
+            csv_download_filtered_table($filterrecords, $list);
+        }
+    }
+
     echo '<h2> WGA Collect Email List Manage Page </h2>';
+    echo '<!-- Add icon library -->';
+    echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">';
     echo '<style>';
     echo 'div.ex3 {';
     //echo '  background-color: lightblue;';
@@ -83,11 +158,25 @@ function wga_admin_manage() {
     //echo '  table, th, td {';
     //echo '  border: 1px solid black;';
     //echo '}';
+    echo '.btn {';
+    echo '  background-color: DodgerBlue;';
+    echo '  border: none;';
+	echo '  color: white;';
+	echo '  padding: 12px 30px;';
+	echo '  cursor: pointer;';
+	echo '  font-size: 20px;';
+	echo '}';
+
+    /* Darker background on mouse-over */
+    echo '.btn:hover {';
+    echo '  background-color: RoyalBlue;';
+    echo '}';
     echo '</style>';
     //echo '<hr>';
     echo '<p><h3>Table contains '.count($list).' records, '.$count_array['active'].' active, '.$count_array['unverified'].' unverified, '.$count_array['unsubscribed'].' unsubscribed </h3></p>';
 
-	echo '<div class="container">';
+    echo '<div style="display:inline-block;">';
+	echo '<div class="container" style="float: left;">';
 	echo '  <h2>Display records:</h2>';
 	echo '  <form action="" method="post">'.PHP_EOL;
 	//echo '  <form>';
@@ -108,8 +197,16 @@ function wga_admin_manage() {
 	echo '      <input id="unsubscribed" type="radio" name="filterrecords" value="unsubscribed" onChange="this.form.submit();" '.$t1.'>Unsubscribed';
 	echo '    </label>';
 	echo '  </form>';
-	echo '</div><br>';
+	echo '</div>';
+    
+	echo '<div style="float: right;">';
+    echo '<form action="" method="post">';
+    echo '  <button type="submit" class="btn" name="downloadtable" value="Download1" /><i class="fa fa-download"></i> Download</button>';
+    echo '</form>';
+	echo '</div>';
+	echo '</div>';
 
+    echo '<br>';
 
     echo '<div class="ex3" style="overflow-x:auto;">';
     echo '<table style="width:100%">';
