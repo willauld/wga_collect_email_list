@@ -1,7 +1,7 @@
 <?php
 
 
-function wga_admin_init(){
+function wga_admin_options(){
     // Options menu
     if(!current_user_can('manage_options')) {
 	    die('Access Denied');
@@ -9,13 +9,18 @@ function wga_admin_init(){
 	echo '<div class="wrap">';
 	echo '	<h2>Welcome To My Options page</h2>';
 	echo '</div>';
+    //
+    // Future options:
+    //   drop table on uninstall, maybe add time limit (or explicit drop done
+    //     done anytime = then would need table add on use or the likes)
+    //   
 }
 
 function get_email_counts($records) {
-        $all = 0;
-        $active = 0;
-        $unverified = 0;
-        $unsubscribed = 0;
+    $all = 0;
+    $active = 0;
+    $unverified = 0;
+    $unsubscribed = 0;
 	foreach ($records as $record) {
         $all++;
         if ($record["is_verified"] == 0) {
@@ -36,7 +41,7 @@ function get_email_counts($records) {
     );
 }
 
-function wga_management() {
+function wga_admin_manage() {
     // Manage menu
     $filterrecords = "all";
 
@@ -159,7 +164,7 @@ function wga_management() {
 
 
 
-function wga_donate() {
+function wga_admin_campaign() {
     // Donate menu
     if(!current_user_can('manage_options')) {
 	    die('Access Denied');

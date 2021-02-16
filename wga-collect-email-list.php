@@ -1,11 +1,11 @@
 <?php
    /*
    Plugin Name: WGA collect email list
-   Plugin URI: 
-   description: a plugin to collect email addresses and create a list in the database
+   Plugin URI: https://github.com/willauld/wga_collect_email_list 
+   description: a plugin to collect email addresses store in db and manage them
    Version: 1.1
-   Author: Will Auld (WGA)
-   Author URI: 
+   Author: Will Auld (WGA) 
+   Author URI: https://github.com/willauld
    License: GPL2
    */
    
@@ -20,7 +20,6 @@ Also used the following two articles:
 -https://www.copernica.com/en/blog/post/how-to-create-email-buttons-with-just-html-and-css
 - https://code.tutsplus.com/tutorials/how-to-implement-email-verification-for-new-members--net-3824
 - 
-
 */
 
 //
@@ -39,8 +38,6 @@ function wga_collect_email_list_activation() {
 	}
 
 	$plugin = isset( $_REQUEST['plugin'] ) ? $_REQUEST['plugin'] : '';
-	
-	// does not work --> check_admin_referer( "deactivate-plugin_{$plugin}" );
 
 	add_option( 'wga-collect-email-list-activated', time() );
 
@@ -67,7 +64,7 @@ function wga_collect_email_list_activation() {
 			. '</p> <a href="' . admin_url( 'plugins.php' ) . '">' . __( 'go back', 'wga_collect_email_list' ) . '</a>'
 		);
 	}
-	// C:\laragon\www\wp2\wp-content\plugins
+	//example: C:\laragon\www\wp2\wp-content\plugins
 	$filename = __DIR__.'/scripts/verify.php';
 	$dest1dir = __DIR__.'/../../../';
     $destfile = $dest1dir.'verify.php';
@@ -83,20 +80,22 @@ function wga_collect_email_list_activation() {
     }
 }
 
-require_once('wga-collect-email-admin.php'); 
 //
 // Add admin functionality
 //
+
+require_once('wga-collect-email-admin.php'); 
+
 add_action('admin_menu', 'wga_plugin_setup_menu');
 
 function wga_plugin_setup_menu(){
 
-    add_menu_page( 'WGA Email Collection Plugin Page', 'WGA Email Plugin', 'manage_options', basename(__FILE__), 'wga_admin_init', 'dashicons-tickets', 66 );
+    add_menu_page( 'WGA Email', 'WGA Email', 'manage_options', basename(__FILE__), 'wga_admin_options', 'dashicons-tickets', 66 );
 
 	if(function_exists('add_submenu_page')){
-		add_submenu_page(basename(__FILE__), 'Options', 'Options', 'manage_options', 'Options', 'wga_admin_init');
-		add_submenu_page(basename(__FILE__), 'Manage', 'Manage',  'manage_options', 'Management', 'wga_management');
-		add_submenu_page(basename(__FILE__), 'Donate', 'Donate',  'manage_options', 'Donate', 'wga_donate');
+		add_submenu_page(basename(__FILE__), '', '', 'manage_options', 'Options', 'wga_admin_options');
+		add_submenu_page(basename(__FILE__), 'Manage', 'Manage',  'manage_options', 'Management', 'wga_admin_manage');
+		add_submenu_page(basename(__FILE__), 'Campaign', 'Campaign',  'manage_options', 'Campaign', 'wga_admin_campaign');
 	}
 }
 

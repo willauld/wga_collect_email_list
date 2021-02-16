@@ -28,8 +28,8 @@
 	#wrap .statusmsg{
 		font-size: 20px; /* Set message font size  */
 		padding: 5px; /* Some padding to make some more space for our text  */
-		background: #EDEDED; /* Add a background color to our status message   */
-		border: 1px solid #DFDFDF; /* Add a border arround our status message   */
+		background: #EDEDED; /* Add background color to our status message   */
+		border: 1px solid #DFDFDF; /* Add border arround our status message   */
         color: red;
 	}	
 </style>
