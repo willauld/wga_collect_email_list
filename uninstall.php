@@ -10,7 +10,8 @@ if ( ! current_user_can( 'activate_plugins' ) ) {
 
 // Uninstallation actions here
 
-// Delete table
+// Delete table <<=== Only after the user has made it clear that is what they want!
+//wga_delete_db_table();
 
 delete_option('wga-collect-email-list-activated');
 delete_option('wga_db_version');
@@ -27,5 +28,4 @@ function wga_delete_db_table() {
 }
 //register_deactivation_hook( __FILE__, 'wga_delete_db_table' );
 
-wga_delete_db_table();
 ?>
