@@ -93,7 +93,7 @@ function wga_plugin_setup_menu(){
     add_menu_page( 'WGA Email', 'WGA Email', 'manage_options', basename(__FILE__), 'wga_admin_options', 'dashicons-tickets', 66 );
 
 	if(function_exists('add_submenu_page')){
-		add_submenu_page(basename(__FILE__), '', '', 'manage_options', 'Options', 'wga_admin_options');
+		add_submenu_page(basename(__FILE__), 'Options', 'Options', 'manage_options', basename(__FILE__), 'wga_admin_options');
 		add_submenu_page(basename(__FILE__), 'Manage', 'Manage',  'manage_options', 'Management', 'wga_admin_manage');
 		add_submenu_page(basename(__FILE__), 'Campaign', 'Campaign',  'manage_options', 'Campaign', 'wga_admin_campaign');
 	}
