@@ -1,4 +1,4 @@
-<?php 
+<?php
     //
     // Make this page compatable with the rest of wordpress
     //
@@ -9,7 +9,6 @@
     // Your WordPress functions here...
     //echo site_url();
 ?>
-
 <html>
 <head>
     <title>Oregon Open Primaries Email Verification</title>

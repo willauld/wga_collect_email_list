@@ -310,12 +310,6 @@ function wga_html_form_code($inpopup, $contact_form) {
 	    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 	      $emailErr = "Invalid email format";
 	    } elseif ($contact_form==0 or $remember==1) {
-            /*
-			$query   = $wpdb->prepare( 
-				"SELECT * FROM {$wpdb->prefix}wga_contact_list WHERE email = %s", $email 
-			);
-            $results = $wpdb->get_results( $query );
-            */
             $results = wga_is_active_email($email);
 
 			if ( count( $results ) > 0 ) {
@@ -516,12 +510,6 @@ function wga_pancake_email_form() {
 	    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 	      $emailErr = "Invalid email format";
 	    } else {
-            /*
-			$query   = $wpdb->prepare( 
-				"SELECT * FROM {$wpdb->prefix}wga_contact_list WHERE email = %s", $email 
-			);
-            $results = $wpdb->get_results( $query );
-            */
             $results = wga_is_active_email($email);
 
 			if ( count( $results ) > 0 ) {

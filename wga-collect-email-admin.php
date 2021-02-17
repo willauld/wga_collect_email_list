@@ -49,20 +49,25 @@ function get_email_counts($records) {
 * Last test on 2 July 2019
 */
 function csv_download_filtered_table($filterrecords, $list) {
-   
-    //$header = 'AppleRinquest Shop,Thailand';   // the data will show in 2 cells
-    //$content = '"' . 'Date:July2,2019' . '"';  // the data will show in 1 cell. we use double quote around the text in order to print out the comma without split the cell.
-    //$content .= 'Product title:,Ring001';
-    //$content .= 'Price per piece:,' . '"' . '150,000 bath' . '"';  // the data will show in 2 cells.
-    //$footer = html_entity_decode( 'Copyright  © AppleRinquest Shop limited.' , ENT_QUOTES, 'UTF-8');  // add html_entity_decode() to decode the HTML entity from the text if any.
-   
-	echo wga_console_log( __LINE__.' WGA:: FilterRecords: "'.$filterrecords.'"' );
-	echo wga_console_log( __LINE__.' WGA:: List: "'.$list.'"' );
-    return;
+    $filename = "wga-email-list-" . time() . ".csv";
     // # add MIME types at the header
-    header('Content-Type: text/csv; charset=UTF-8;');  // tell the browser that this is the CSV file and encode UTF8.
-    header('Content-Disposition: attachment; filename="'. "wga-email-list-" . time() .'.csv"');    // tell the browser to let the viewers can download the file with the default filename as provided.
+    if (true /*orig*/) {
+        header('Content-Type: text/csv; charset=UTF-8;');  // browser the is UTF8 CSV file
+        header('Content-Disposition: attachment; filename='. $filename );    // tell the browser to let the viewers can download the file with the default filename as provided.
+    } elseif (false /*https://phppot.com/php/php-csv-file-export-using-fputcsv/*/) {
+        header('Content-type: application/csv');
+        header('Content-Disposition: attachment; filename='.$filename);
+    } else /*githubcsv.php*/ {
+        header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
+        header( 'Content-Description: File Transfer' );
+        header( 'Content-type: text/csv' );
+        header( "Content-Disposition: attachment; filename={$filename}" );
+        header( 'Expires: 0' );
+        header( 'Pragma: public' ); 
+    }
     
+	//echo wga_console_log( __LINE__.' WGA:: List: "'.$list.'"' );
+
     // # to protect the MSExcel(2013 and older version) replaces the accent marks to the question mark(?)
     // I add these 3 byte UTF8 here before print out the first line to CSV file.
     echo chr(0xEF);
@@ -131,11 +136,10 @@ function wga_admin_manage() {
             $filterrecords = sanitize_text_field($_POST["filterrecords"]);
         }
         if (!empty($_POST["downloadtable"])) {
-            //add_action( 'admin_init', 'csv_download_filtered_table');
-            add_action( 'wga_admin_init', 'csv_download_filtered_table',10,2);
-            do_action( 'wga_admin_init', 'all', $list );
+            //add_action( 'wga_admin_init', 'csv_download_filtered_table',10,2);
             //do_action( 'wga_admin_init', $filterrecords, $list );
-            //csv_download_filtered_table($filterrecords, $list);
+            //do_action( 'wga_admin_init', $filterrecords, $list );
+            csv_download_filtered_table($filterrecords, $list);
         }
     }
 
