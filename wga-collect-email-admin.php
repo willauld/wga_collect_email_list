@@ -9,6 +9,8 @@ function wga_admin_options(){
 	echo '<div class="wrap">';
 	echo '	<h2>Welcome To My Options page</h2>';
 	echo '</div>';
+
+    require_once('githubcsv.php');
     //
     // Future options:
     //   drop table on uninstall, maybe add time limit (or explicit drop done
@@ -48,12 +50,15 @@ function get_email_counts($records) {
 */
 function csv_download_filtered_table($filterrecords, $list) {
    
-    $header = 'AppleRinquest Shop,Thailand';   // the data will show in 2 cells
-    $content = '"' . 'Date:July2,2019' . '"';  // the data will show in 1 cell. we use double quote around the text in order to print out the comma without split the cell.
-    $content .= 'Product title:,Ring001';
-    $content .= 'Price per piece:,' . '"' . '150,000 bath' . '"';  // the data will show in 2 cells.
-    $footer = html_entity_decode( 'Copyright  © AppleRinquest Shop limited.' , ENT_QUOTES, 'UTF-8');  // add html_entity_decode() to decode the HTML entity from the text if any.
+    //$header = 'AppleRinquest Shop,Thailand';   // the data will show in 2 cells
+    //$content = '"' . 'Date:July2,2019' . '"';  // the data will show in 1 cell. we use double quote around the text in order to print out the comma without split the cell.
+    //$content .= 'Product title:,Ring001';
+    //$content .= 'Price per piece:,' . '"' . '150,000 bath' . '"';  // the data will show in 2 cells.
+    //$footer = html_entity_decode( 'Copyright  © AppleRinquest Shop limited.' , ENT_QUOTES, 'UTF-8');  // add html_entity_decode() to decode the HTML entity from the text if any.
    
+	echo wga_console_log( __LINE__.' WGA:: FilterRecords: "'.$filterrecords.'"' );
+	echo wga_console_log( __LINE__.' WGA:: List: "'.$list.'"' );
+    return;
     // # add MIME types at the header
     header('Content-Type: text/csv; charset=UTF-8;');  // tell the browser that this is the CSV file and encode UTF8.
     header('Content-Disposition: attachment; filename="'. "wga-email-list-" . time() .'.csv"');    // tell the browser to let the viewers can download the file with the default filename as provided.
@@ -65,7 +70,7 @@ function csv_download_filtered_table($filterrecords, $list) {
     echo chr(0xBF);
     
     // # print out your data
-    echo $header;
+    //echo $header;
     echo "\n";  // add new line
     echo "\n";  // add new line
 
@@ -126,7 +131,11 @@ function wga_admin_manage() {
             $filterrecords = sanitize_text_field($_POST["filterrecords"]);
         }
         if (!empty($_POST["downloadtable"])) {
-            csv_download_filtered_table($filterrecords, $list);
+            //add_action( 'admin_init', 'csv_download_filtered_table');
+            add_action( 'wga_admin_init', 'csv_download_filtered_table',10,2);
+            do_action( 'wga_admin_init', 'all', $list );
+            //do_action( 'wga_admin_init', $filterrecords, $list );
+            //csv_download_filtered_table($filterrecords, $list);
         }
     }
 
