@@ -23,7 +23,7 @@ if ( isset($_GET['action'] ) && $_GET['action'] == 'download_csv' )  {
 
 function csv_export() {
 
-	echo wga_console_log( __LINE__.' WGA:: FilterRecords:: "'.$filterrecords.'"' );
+	//echo wga_console_log( __LINE__.' WGA:: FilterRecords:: "'.$filterrecords.'"' );
     // Check for current user privileges 
     if( !current_user_can( 'manage_options' ) ){ return false; }
 
@@ -35,7 +35,7 @@ function csv_export() {
     if ( ! wp_verify_nonce( $nonce, 'download_csv' ) ) {
         die( 'Security check error' );
     }
-	echo wga_console_log( __LINE__.' WGA:: FilterRecords:: "'.$filterrecords.'"' );
+	//echo wga_console_log( __LINE__.' WGA:: FilterRecords:: "'.$filterrecords.'"' );
     //ob_start();
 
     $domain = $_SERVER['SERVER_NAME'];
@@ -56,8 +56,9 @@ function csv_export() {
         );
         $data_rows[] = $row;
     }
+    //ob_end_clean (); // clear the shit from the buffer
+    //ob_end_flush();
     ob_start();
-    //ob_end_clean ();
     $fh = @fopen( 'php://output', 'w' );
     fprintf( $fh, chr(0xEF) . chr(0xBB) . chr(0xBF) );
     header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );

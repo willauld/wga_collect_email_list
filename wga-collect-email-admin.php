@@ -10,6 +10,11 @@ function wga_admin_options(){
 	echo '	<h2>Welcome To My Options page</h2>';
 	echo '</div>';
 
+    $my_ob_level = ob_get_level();
+    $my_ob_content = ob_get_contents();
+    echo '<h1> buffering level is: '.$my_ob_level.'</h1>';
+    echo '<h2> buffering content: "'.$my_ob_content.'"</h2>';
+    return;
     require_once('githubcsv.php');
     //
     // Future options:
@@ -48,9 +53,24 @@ function get_email_counts($records) {
 * It works in MSExcel(2013 and newer), WPS office, Google Sheet online and Openoffice.
 * Last test on 2 July 2019
 */
-function csv_download_filtered_table($filterrecords, $list) {
+
+add_action( 'admin_post_generate_csv', 'csv_download_filtered_table' );
+
+function csv_download_filtered_table(/*$filterrecords, $list*/) {
+    status_header(200);
+    //request handlers should exit() when they complete their task
+    //exit("Server received '{$_REQUEST['data1']}' and '{$_REQUEST['data2']}' from your browser.");
+
+    $filterrecords = 'all';
+    if (!empty($_POST["data1"])) {
+        $filterrecords = $_POST["data1"];
+    }
+    $list = get_email_list(); 
     $filename = "wga-email-list-" . time() . ".csv";
     // # add MIME types at the header
+    //ob_end_clean (); // clear the shit from the buffer
+    //ob_end_flush();
+    //ob_start();      // open new buffer
     if (true /*orig*/) {
         header('Content-Type: text/csv; charset=UTF-8;');  // browser the is UTF8 CSV file
         header('Content-Disposition: attachment; filename='. $filename );    // tell the browser to let the viewers can download the file with the default filename as provided.
@@ -70,17 +90,35 @@ function csv_download_filtered_table($filterrecords, $list) {
 
     // # to protect the MSExcel(2013 and older version) replaces the accent marks to the question mark(?)
     // I add these 3 byte UTF8 here before print out the first line to CSV file.
-    echo chr(0xEF);
-    echo chr(0xBB);
-    echo chr(0xBF);
+    $fh = @fopen( 'php://output', 'w' );
+    fprintf( $fh, chr(0xEF) . chr(0xBB) . chr(0xBF) );
+    //echo chr(0xEF);
+    //echo chr(0xBB);
+    //echo chr(0xBF);
     
     // # print out your data
     //echo $header;
-    echo "\n";  // add new line
-    echo "\n";  // add new line
+    //echo "\n";  // add new line
+    //echo "\n";  // add new line
 
-    echo 'ID,First Name,Last Name,Email,Source,Unsubscribed,Created_at,Updated_at,Is Verified?,Hash\n';
+    $header_row = array(
+        'ID',
+        'First Name',
+        'last Name',
+        'Email',
+        'Source',
+        'Unsubscribed',
+        'Created_at',
+        'Updated_at',
+        'Is Verified?',
+        'Hash',
+    );
+    //echo 'ID,First Name,Last Name,Email,Source,Unsubscribed,Created_at,Updated_at,Is Verified?,Hash\n';
 
+    fputcsv( $fh, $header_row );
+    //foreach ( $data_rows as $data_row ) {
+    //    fputcsv( $fh, $data_row );
+    //}
 	foreach ($list as $record) {
         $dorecord = 0;
         if ($filterrecords == "all") {
@@ -100,22 +138,24 @@ function csv_download_filtered_table($filterrecords, $list) {
         }
         if ($dorecord == 1) { 
             // Add quote around each field in case they have inbedded commas
-	        echo $record["id"].",";
-	        echo $record["first_name"].",";
-	        echo $record["last_name"].",";
-	        echo $record["email"].",";
-	        echo $record["source"].",";
-	        echo $record["unsubscribed"].",";
-	        echo $record["created_at"].",";
-	        echo $record["updated_at"].",";
-	        echo $record["is_verified"].",";
-	        echo $record["vhash"]."\n";
+        fputcsv( $fh, $record );
+//	        echo $record["id"].",";
+//	        echo $record["first_name"].",";
+//	        echo $record["last_name"].",";
+//	        echo $record["email"].",";
+//	        echo $record["source"].",";
+//	        echo $record["unsubscribed"].",";
+//	        echo $record["created_at"].",";
+//	        echo $record["updated_at"].",";
+//	        echo $record["is_verified"].",";
+//	        echo $record["vhash"]."\n";
         }
     }
+    fclose( $fh );
 
-    echo "\n";  // add new line
-    echo "\n";  // add new line    
-    //echo $footer;
+    //echo "\n";  // add new line
+    //echo "\n";  // add new line    
+    //ob_end_flush();
     exit; // add the exit or die() after the last print out content to the CSV file.
           // otherwise, you may see all the current HTML code will print out to the CSV file too.
 }
@@ -136,10 +176,10 @@ function wga_admin_manage() {
             $filterrecords = sanitize_text_field($_POST["filterrecords"]);
         }
         if (!empty($_POST["downloadtable"])) {
-            //add_action( 'wga_admin_init', 'csv_download_filtered_table',10,2);
+            add_action( 'wga_admin_init', 'csv_download_filtered_table',10,2);
+            do_action( 'wga_admin_init', $filterrecords, $list );
             //do_action( 'wga_admin_init', $filterrecords, $list );
-            //do_action( 'wga_admin_init', $filterrecords, $list );
-            csv_download_filtered_table($filterrecords, $list);
+            //csv_download_filtered_table($filterrecords, $list);
         }
     }
 
@@ -211,10 +251,16 @@ function wga_admin_manage() {
 	echo '    </label>';
 	echo '  </form>';
 	echo '</div>';
-    
 	echo '<div style="float: right;">';
-    echo '<form action="" method="post">';
-    echo '  <button type="submit" class="btn" name="downloadtable" value="Download1" /><i class="fa fa-download"></i> Download</button>';
+
+    //echo '<form action="" method="post">';
+    $myaction=admin_url( 'admin-post.php' );
+    echo '<form action="'.$myaction.'" method="post">';
+    echo '  <input type="hidden" name="data1" value="'.$filterrecords.'">';
+    echo '  <input type="hidden" name="data2" value="foobarid2">';
+    echo '  <input type="hidden" name="action" value="generate_csv" />';
+    echo '  <input type="submit" name="submit" class="button button-primary" value="Generate & Download CSV File" />';
+    //echo '  <button type="submit" class="btn" name="downloadtable" value="Download1" /><i class="fa fa-download"></i> Download</button>';
     echo '</form>';
 	echo '</div>';
 	echo '</div>';
