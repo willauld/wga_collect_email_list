@@ -10,6 +10,7 @@ function wga_admin_options(){
 	echo '	<h2>Welcome To My Options page</h2>';
 	echo '</div>';
 
+    /*
     $my_ob_level = ob_get_level();
     $my_ob_content = ob_get_contents();
     echo '<h1> buffering level is: '.$my_ob_level.'</h1>';
@@ -21,6 +22,7 @@ function wga_admin_options(){
     //   drop table on uninstall, maybe add time limit (or explicit drop done
     //     done anytime = then would need table add on use or the likes)
     //   
+    */
 }
 
 function get_email_counts($records) {
@@ -85,7 +87,7 @@ function csv_download_filtered_table(/*$filterrecords, $list*/) {
     $header_row = array(
         'ID',
         'First Name',
-        'last Name',
+        'Last Name',
         'Email',
         'Source',
         'Unsubscribed',
@@ -167,30 +169,20 @@ function wga_admin_manage() {
     echo '  text-align: left;';
     echo '  padding: 8px;';
     echo '}';
-
-    //echo 'tr:nth-child(even){background-color: #f2f2f2}';
-    //echo '  background-color: lightblue;';
     echo 'tr:nth-child(even){background-color: lightblue}';
-    //echo '  table, th, td {';
-    //echo '  border: 1px solid black;';
-    //echo '}';
-    echo '.btn {';
-    echo '  background-color: DodgerBlue;';
-    echo '  border: none;';
-	echo '  color: white;';
-	echo '  padding: 12px 30px;';
-	echo '  cursor: pointer;';
-	echo '  font-size: 20px;';
-	echo '}';
 
     /* Darker background on mouse-over */
-    echo '.btn:hover {';
-    echo '  background-color: RoyalBlue;';
+    echo '.button button-primary:hover {';
+    //echo '  background-color: RoyalBlue;';
+    echo '  background-color: lightblue;';
     echo '}';
     echo '</style>';
     //echo '<hr>';
     echo '<p><h3>Table contains '.count($list).' records, '.$count_array['active'].' active, '.$count_array['unverified'].' unverified, '.$count_array['unsubscribed'].' unsubscribed </h3></p>';
 
+    //
+    // Radio button selector for filter
+    //
     echo '<div style="display:inline-block;">';
 	echo '<div class="container" style="float: left;">';
 	echo '  <h2>Display records:</h2>';
@@ -216,6 +208,9 @@ function wga_admin_manage() {
 	echo '</div>';
 	echo '<div style="float: right;">';
 
+    //
+    // Download form / button
+    //
     //echo '<form action="" method="post">';
     $myaction=admin_url( 'admin-post.php' );
     echo '<form action="'.$myaction.'" method="post">';
