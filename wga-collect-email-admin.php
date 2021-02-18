@@ -48,18 +48,13 @@ function get_email_counts($records) {
     );
 }
 
-/**
-* The full correct version without any issues.
-* It works in MSExcel(2013 and newer), WPS office, Google Sheet online and Openoffice.
-* Last test on 2 July 2019
-*/
-
 add_action( 'admin_post_generate_csv', 'csv_download_filtered_table' );
 
 function csv_download_filtered_table(/*$filterrecords, $list*/) {
+    //https://developer.wordpress.org/reference/hooks/admin_post_action/
+    // The above page explains how to connect this function to the 
+    // form post.
     status_header(200);
-    //request handlers should exit() when they complete their task
-    //exit("Server received '{$_REQUEST['data1']}' and '{$_REQUEST['data2']}' from your browser.");
 
     $filterrecords = 'all';
     if (!empty($_POST["data1"])) {
@@ -68,9 +63,6 @@ function csv_download_filtered_table(/*$filterrecords, $list*/) {
     $list = get_email_list(); 
     $filename = "wga-email-list-" . time() . ".csv";
     // # add MIME types at the header
-    //ob_end_clean (); // clear the shit from the buffer
-    //ob_end_flush();
-    //ob_start();      // open new buffer
     if (true /*orig*/) {
         header('Content-Type: text/csv; charset=UTF-8;');  // browser the is UTF8 CSV file
         header('Content-Disposition: attachment; filename='. $filename );    // tell the browser to let the viewers can download the file with the default filename as provided.
@@ -86,20 +78,9 @@ function csv_download_filtered_table(/*$filterrecords, $list*/) {
         header( 'Pragma: public' ); 
     }
     
-	//echo wga_console_log( __LINE__.' WGA:: List: "'.$list.'"' );
-
-    // # to protect the MSExcel(2013 and older version) replaces the accent marks to the question mark(?)
-    // I add these 3 byte UTF8 here before print out the first line to CSV file.
     $fh = @fopen( 'php://output', 'w' );
+    // I add these 3 byte UTF8 here before print out the first line to CSV file.
     fprintf( $fh, chr(0xEF) . chr(0xBB) . chr(0xBF) );
-    //echo chr(0xEF);
-    //echo chr(0xBB);
-    //echo chr(0xBF);
-    
-    // # print out your data
-    //echo $header;
-    //echo "\n";  // add new line
-    //echo "\n";  // add new line
 
     $header_row = array(
         'ID',
@@ -113,12 +94,8 @@ function csv_download_filtered_table(/*$filterrecords, $list*/) {
         'Is Verified?',
         'Hash',
     );
-    //echo 'ID,First Name,Last Name,Email,Source,Unsubscribed,Created_at,Updated_at,Is Verified?,Hash\n';
-
     fputcsv( $fh, $header_row );
-    //foreach ( $data_rows as $data_row ) {
-    //    fputcsv( $fh, $data_row );
-    //}
+
 	foreach ($list as $record) {
         $dorecord = 0;
         if ($filterrecords == "all") {
@@ -137,26 +114,12 @@ function csv_download_filtered_table(/*$filterrecords, $list*/) {
             }
         }
         if ($dorecord == 1) { 
-            // Add quote around each field in case they have inbedded commas
-        fputcsv( $fh, $record );
-//	        echo $record["id"].",";
-//	        echo $record["first_name"].",";
-//	        echo $record["last_name"].",";
-//	        echo $record["email"].",";
-//	        echo $record["source"].",";
-//	        echo $record["unsubscribed"].",";
-//	        echo $record["created_at"].",";
-//	        echo $record["updated_at"].",";
-//	        echo $record["is_verified"].",";
-//	        echo $record["vhash"]."\n";
+            fputcsv( $fh, $record );
         }
     }
     fclose( $fh );
 
-    //echo "\n";  // add new line
-    //echo "\n";  // add new line    
-    //ob_end_flush();
-    exit; // add the exit or die() after the last print out content to the CSV file.
+    exit; // exit or die() after the last print out content to the CSV file.
           // otherwise, you may see all the current HTML code will print out to the CSV file too.
 }
 
