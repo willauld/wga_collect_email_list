@@ -125,6 +125,37 @@ function csv_download_filtered_table(/*$filterrecords, $list*/) {
           // otherwise, you may see all the current HTML code will print out to the CSV file too.
 }
 
+add_action( 'admin_post_submit_content', 'my_submission_processor' );
+//add_action( 'wp_ajax_nopriv_submit_content', 'my_submission_processor' );
+//add_action( 'wp_ajax_submit_content', 'my_submission_processor' );
+
+function my_submission_processor() { // change this name later!!!
+	// Handle the form in here
+    if (false) {
+	    $target_dir = wp_upload_dir();
+	    $target_file = $target_dir . basename($_FILES["cvsfile"]["name"]);
+	    $imageFileType = strtolower(pathinfo($target_file,PATHINFO_EXTENSION));
+	    if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
+	        echo "The file ". htmlspecialchars( basename( $_FILES["fileToUpload"]["name"])). " has been uploaded.";
+	    } else {
+	        echo "Sorry, there was an error uploading your file.";
+	    }
+	    wp_redirect( $_POST["current_url"] );
+	    //wp_redirect( site_url() . '/thank-you/' );
+	    die();
+    }else {
+	     $upload = wp_upload_bits( $_FILES['csvfile']['name'], null, file_get_contents( $_FILES['csvfile']['tmp_name'] ) );
+	
+	    //echo '<h2> error: '.$upload['error'].' file: '.$upload['file'].' url: '.$upload['url'].' </h2>';
+	
+	    $wp_filetype = wp_check_filetype( basename( $upload['file'] ), null );
+	    //$current_url = home_url($_SERVER['REQUEST_URI']);
+        echo '<h2> current_url:'.$_POST['current_url'];
+	    wp_redirect( $_POST["current_url"] );
+	    die();
+    }
+}
+
 function wga_admin_manage() {
     // Manage menu
     $filterrecords = "all";
@@ -183,8 +214,8 @@ function wga_admin_manage() {
     //
     // Radio button selector for filter
     //
-    echo '<div style="display:inline-block;">';
-	echo '<div class="container" style="float: left;">';
+    echo '<div style="display:inline-block; width:95%">';//container of radio and download
+	echo '<div class="container" style="float: left;">';//container of radio
 	echo '  <h2>Display records:</h2>';
 	echo '  <form action="" method="post">'.PHP_EOL;
 	//echo '  <form>';
@@ -206,12 +237,11 @@ function wga_admin_manage() {
 	echo '    </label>';
 	echo '  </form>';
 	echo '</div>';
-	echo '<div style="float: right;">';
 
     //
     // Download form / button
     //
-    //echo '<form action="" method="post">';
+	echo '<div style="float: right;">';// container of download button
     $myaction=admin_url( 'admin-post.php' );
     echo '<form action="'.$myaction.'" method="post">';
     echo '  <input type="hidden" name="data1" value="'.$filterrecords.'">';
@@ -220,13 +250,13 @@ function wga_admin_manage() {
     echo '  <input type="submit" name="submit" class="button button-primary" value="Generate & Download CSV File" />';
     //echo '  <button type="submit" class="btn" name="downloadtable" value="Download1" /><i class="fa fa-download"></i> Download</button>';
     echo '</form>';
-	echo '</div>';
-	echo '</div>';
+	echo '</div>';//download container
+	echo '</div>';//radio & download container
 
     echo '<br>';
 
     echo '<div class="ex3" style="overflow-x:auto;">';
-    echo '<table style="width:100%">';
+    echo '<table style="width:95%">';
     echo '  <tr>';
     echo '      <th>ID</th>';
     echo '      <th>First Name</th>';
@@ -272,8 +302,34 @@ function wga_admin_manage() {
 	        echo '</tr>';
         }
     }
-    echo '</div>';
     echo '</table>';
+	echo '</div>'; //table container
+
+    //
+    // upload form
+    //
+    $current_url = add_query_arg( $_SERVER['QUERY_STRING'], 'admin.php', home_url( $wp->request ) );
+    //$current_url = home_url($_SERVER['REQUEST_URI'])
+    $current_url = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+?>
+	<H2> Current URL: <?php echo $current_url ?> </h2>
+    <form action="<?php echo admin_url( 'admin-post.php' ) ?>" method="post" enctype="multipart/form-data">
+
+	<?php wp_nonce_field( 'submit_content', 'my_nonce_field' ); ?>
+
+	<p>
+		<input type='file' name='csvfile' accept='csv'>
+	</p>
+
+	<p>
+		<input type='hidden' name='action' value='submit_content'>
+		<input type='hidden' name='current_url' value='<?php echo $current_url ?>' >
+		<input type='submit' value='Submit Content'>
+	</p>
+
+</form>
+<?php
+
 }
 
 
