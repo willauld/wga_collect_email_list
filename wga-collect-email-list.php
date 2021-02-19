@@ -801,9 +801,9 @@ function wga_process_input($name, $email, $remember, $input_message, $contact_fo
         //echo __LINE__.":: contact_form: $contact_form\n";
         $verification_success = wga_send_verification_email($name, $email, $hash);
 
-		echo wga_console_log(__LINE__."wga:: remember:$remember, input:$input_message, contact_form:$contact_form");
+		//echo wga_console_log(__LINE__."wga:: remember:$remember, input:$input_message, contact_form:$contact_form");
     }
-	echo wga_console_log(__LINE__."wga:: remember:$remember, input:$input_message, contact_form:$contact_form");
+	//echo wga_console_log(__LINE__."wga:: remember:$remember, input:$input_message, contact_form:$contact_form");
 
     if ($contact_form==1 and (!empty($input_message))) { 
         $contact_success = wga_send_message($name, $email, $input_message);

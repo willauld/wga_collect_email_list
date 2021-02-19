@@ -95,6 +95,7 @@ function csv_download_filtered_table(/*$filterrecords, $list*/) {
         'Updated_at',
         'Is Verified?',
         'Hash',
+        'Update Record by ID',
     );
     fputcsv( $fh, $header_row );
 
@@ -125,11 +126,9 @@ function csv_download_filtered_table(/*$filterrecords, $list*/) {
           // otherwise, you may see all the current HTML code will print out to the CSV file too.
 }
 
-add_action( 'admin_post_submit_content', 'my_submission_processor' );
-//add_action( 'wp_ajax_nopriv_submit_content', 'my_submission_processor' );
-//add_action( 'wp_ajax_submit_content', 'my_submission_processor' );
+add_action( 'admin_post_submit_content', 'csv_submission_processor' );
 
-function my_submission_processor() { // change this name later!!!
+function csv_submission_processor() {
 	// Handle the form in here
     if (false) {
 	    $target_dir = wp_upload_dir();
@@ -147,12 +146,99 @@ function my_submission_processor() { // change this name later!!!
 	     $upload = wp_upload_bits( $_FILES['csvfile']['name'], null, file_get_contents( $_FILES['csvfile']['tmp_name'] ) );
 	
 	    //echo '<h2> error: '.$upload['error'].' file: '.$upload['file'].' url: '.$upload['url'].' </h2>';
-	
 	    $wp_filetype = wp_check_filetype( basename( $upload['file'] ), null );
-	    //$current_url = home_url($_SERVER['REQUEST_URI']);
         echo '<h2> current_url:'.$_POST['current_url'];
-	    wp_redirect( $_POST["current_url"] );
+
+        wga_update_table_from_csvfile($upload['file']);
+
+	    //wp_redirect( $_POST["current_url"] );
 	    die();
+    }
+}
+
+function wga_update_table_from_csvfile($file) {
+    //
+    // csv file format based on csv download format. The file contains a title row
+    // followed by the data rows. Each row starts with an id field. If the row 
+    // represents a new record the id field should be blank. The last field is blank
+    // on download but can be set to '1' in the case the row has been modified and is
+    // intended to update the datebase record with the same id field. Rows without this
+    // field set will be inserted into the table if the email field value is not already
+    // present in the table. If it is present the row will be ignored. 
+    //
+    $row = 1;
+    if (($handle = fopen($file, "r")) !== FALSE) {
+        while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+            $num = count($data);
+            echo "<p> $num fields in line $row: <br /></p>\n";
+            $row++;
+            for ($c=0; $c < $num; $c++) {
+                echo $data[$c] . "<br />\n";
+            }
+            wga_insert_or_update_record($data);
+        }
+        fclose($handle);
+    } 
+}
+
+function wga_insert_or_update_record($row_data) {
+    global $wpdb;
+    $id = $row_data[0];
+	$updated_at = current_time( 'mysql' );
+    if ($row_data[10] == 1) {
+        // field index 10 is Update Record by ID
+		if ($wpdb->update(
+			"{$wpdb->prefix}wga_contact_list",
+			array( // data
+                'first_name' => $row_data[1],
+                'last_name' => $row_data[2],
+                'email' => $row_data[3],
+                'source' => $row_data[4], 
+                'unsubscribed' => $row_data[5],
+                'created_at' => $row_data[6],
+				'updated_at' => $updated_at,
+                'is_verified' => $row_data[8],
+                'vhash' => $row_data[9],
+			),
+			array( //where
+				'id' => $id,
+			)
+		) 
+		== 1) 
+		{
+			echo '<div class="statusmsg">Updated record '.$row_data[0].'</div>';
+            return true;
+		} else {
+            return false;
+        }
+    
+    }elseif (empty($id)) {
+        //
+        // Need to check if email is already in the table before insert!!!!
+        //
+		    $table_name = $wpdb->prefix . 'wga_contact_list';
+		    $wpdb->insert( 
+			    $table_name, 
+			    array( 
+				'first_name' => $row_data[1],
+				'last_name' => $row_data[2],
+				'email' => $row_data[3],
+                'source' => $row_data[4],
+                'unsubscribed' => $row_data[5],
+                'created_at' => $row_data[6],
+				'updated_at' => $updated_at,
+                'is_verified' => $row_data[8],
+				'vhash' => $row_data[9], 
+			    ) 
+            );
+            //
+            // REturn status????
+            // 
+    }else{
+        //
+        // Don't update existing record without field 10 directive.
+        //
+        return false;
     }
 }
 
@@ -308,7 +394,7 @@ function wga_admin_manage() {
     //
     // upload form
     //
-    $current_url = add_query_arg( $_SERVER['QUERY_STRING'], 'admin.php', home_url( $wp->request ) );
+    //$current_url = add_query_arg( $_SERVER['QUERY_STRING'], 'admin.php', home_url( $wp->request ) );
     //$current_url = home_url($_SERVER['REQUEST_URI'])
     $current_url = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 ?>
