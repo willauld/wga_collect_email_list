@@ -145,13 +145,15 @@ function csv_submission_processor() {
     }else {
 	     $upload = wp_upload_bits( $_FILES['csvfile']['name'], null, file_get_contents( $_FILES['csvfile']['tmp_name'] ) );
 	
+        /*
 	    //echo '<h2> error: '.$upload['error'].' file: '.$upload['file'].' url: '.$upload['url'].' </h2>';
 	    $wp_filetype = wp_check_filetype( basename( $upload['file'] ), null );
         echo '<h2> current_url:'.$_POST['current_url'];
+        */
 
         wga_update_table_from_csvfile($upload['file']);
 
-	    //wp_redirect( $_POST["current_url"] );
+	    wp_redirect( $_POST["current_url"] );
 	    die();
     }
 }
@@ -169,12 +171,14 @@ function wga_update_table_from_csvfile($file) {
     $row = 1;
     if (($handle = fopen($file, "r")) !== FALSE) {
         while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+            /*
             $num = count($data);
             echo "<p> $num fields in line $row: <br /></p>\n";
             $row++;
             for ($c=0; $c < $num; $c++) {
                 echo $data[$c] . "<br />\n";
             }
+            */
             wga_insert_or_update_record($data);
         }
         fclose($handle);
@@ -185,6 +189,7 @@ function wga_insert_or_update_record($row_data) {
     global $wpdb;
     $id = $row_data[0];
 	$updated_at = current_time( 'mysql' );
+    echo 'CREATED_AT ROW_DATA[6] '.  $row_data[6];
     if ($row_data[10] == 1) {
         // field index 10 is Update Record by ID
 		if ($wpdb->update(
@@ -195,7 +200,7 @@ function wga_insert_or_update_record($row_data) {
                 'email' => $row_data[3],
                 'source' => $row_data[4], 
                 'unsubscribed' => $row_data[5],
-                'created_at' => $row_data[6],
+                'created_at' => date("Y-m-d H:i:s", strtotime($row_data[6])),
 				'updated_at' => $updated_at,
                 'is_verified' => $row_data[8],
                 'vhash' => $row_data[9],
@@ -225,7 +230,7 @@ function wga_insert_or_update_record($row_data) {
 				'email' => $row_data[3],
                 'source' => $row_data[4],
                 'unsubscribed' => $row_data[5],
-                'created_at' => $row_data[6],
+                'created_at' => date("Y-m-d H:i:s", strtotime($row_data[6])),
 				'updated_at' => $updated_at,
                 'is_verified' => $row_data[8],
 				'vhash' => $row_data[9], 
@@ -271,14 +276,14 @@ function wga_admin_manage() {
     echo '<style>';
     echo 'div.ex3 {';
     //echo '  background-color: lightblue;';
-    echo '  height: 400px;';
+    echo '  height: 350px;';
     echo '  overflow: auto;';
     echo '}';
 
     echo 'table {';
     echo '  border-collapse: collapse;';
     echo '  border-spacing: 0;';
-    echo '  width: 100%;';
+    echo '  width: 95%;';
     echo '  border: 1px solid #ddd;';
     echo '}';
 
@@ -341,7 +346,7 @@ function wga_admin_manage() {
 
     echo '<br>';
 
-    echo '<div class="ex3" style="overflow-x:auto;">';
+    echo '<div class="ex3" style="overflow-x:auto; width:95%">';
     echo '<table style="width:95%">';
     echo '  <tr>';
     echo '      <th>ID</th>';
@@ -394,12 +399,22 @@ function wga_admin_manage() {
     //
     // upload form
     //
-    //$current_url = add_query_arg( $_SERVER['QUERY_STRING'], 'admin.php', home_url( $wp->request ) );
-    //$current_url = home_url($_SERVER['REQUEST_URI'])
     $current_url = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+	//echo '<H2> Current URL: '.$current_url .' </h2>';
+    //#006d9e;
 ?>
-	<H2> Current URL: <?php echo $current_url ?> </h2>
+
+    <style>
+    ::-webkit-file-upload-button {
+        background: #0570c7; 
+        color: white;
+        padding: 1em;
+        border-radius: 6px;
+    }
+    </style>
+
     <form action="<?php echo admin_url( 'admin-post.php' ) ?>" method="post" enctype="multipart/form-data">
+    <fieldset style="width:95%">
 
 	<?php wp_nonce_field( 'submit_content', 'my_nonce_field' ); ?>
 
@@ -410,9 +425,10 @@ function wga_admin_manage() {
 	<p>
 		<input type='hidden' name='action' value='submit_content'>
 		<input type='hidden' name='current_url' value='<?php echo $current_url ?>' >
-		<input type='submit' value='Submit Content'>
+        <input type="submit" name="submit" class="button button-primary" value="Submit CSV File Content" />
 	</p>
-
+    <p> CSV file download can act as a template for submitted content. New records should leave the ID field empty. Current records to be modified/updated should have a '1' in the final column. All other records will be ignored. </p>
+    </fieldset>
 </form>
 <?php
 

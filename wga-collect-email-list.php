@@ -120,7 +120,8 @@ function wga_db_table_install() {
 		updated_at datetime,
 		is_verified tinyint(1) DEFAULT 0,
         vhash varchar(32) NOT NULL,
-		UNIQUE KEY id (id)
+		UNIQUE KEY id (id),
+		UNIQUE KEY email (email)
 	) $charset_collate;";
 
 
