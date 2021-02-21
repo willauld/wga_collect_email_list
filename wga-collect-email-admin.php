@@ -130,6 +130,10 @@ add_action( 'admin_post_submit_content', 'csv_submission_processor' );
 
 function csv_submission_processor() {
 	// Handle the form in here
+    if ( ! isset( $_POST['submit_and_update_table'] )
+        || ! wp_verify_nonce( $_POST['submit_and_update_table'], 'submit_content' )) {
+        wp_nonce_ays( '' );
+    } 
     if (false) {
 	    $target_dir = wp_upload_dir();
 	    $target_file = $target_dir . basename($_FILES["cvsfile"]["name"]);
@@ -407,7 +411,7 @@ function wga_admin_manage() {
     <form action="<?php echo admin_url( 'admin-post.php' ) ?>" method="post" enctype="multipart/form-data">
     <fieldset style="width:95%">
 
-	<?php wp_nonce_field( 'submit_content', 'my_nonce_field' ); ?>
+	<?php wp_nonce_field( 'submit_content', 'submit_and_update_table' ); ?>
 
 	<p>
 		<input type='file' name='csvfile' accept='csv'>
