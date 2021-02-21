@@ -404,15 +404,6 @@ function wga_admin_manage() {
     //#006d9e;
 ?>
 
-    <style>
-    ::-webkit-file-upload-button {
-        background: #0570c7; 
-        color: white;
-        padding: 1em;
-        border-radius: 6px;
-    }
-    </style>
-
     <form action="<?php echo admin_url( 'admin-post.php' ) ?>" method="post" enctype="multipart/form-data">
     <fieldset style="width:95%">
 
@@ -425,7 +416,7 @@ function wga_admin_manage() {
 	<p>
 		<input type='hidden' name='action' value='submit_content'>
 		<input type='hidden' name='current_url' value='<?php echo $current_url ?>' >
-        <input type="submit" name="submit" class="button button-primary" value="Submit CSV File Content" />
+        <input type="submit" name="submit" value="Submit CSV File Content" />
 	</p>
     <p> CSV file download can act as a template for submitted content. New records should leave the ID field empty. Current records to be modified/updated should have a '1' in the final column. All other records will be ignored. </p>
     </fieldset>
