@@ -187,6 +187,7 @@ function wga_update_table_from_csvfile($file) {
         }
         fclose($handle);
     } 
+    unlink($file);
 }
 
 function wga_insert_or_update_record($row_data) {
