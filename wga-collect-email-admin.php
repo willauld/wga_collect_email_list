@@ -183,7 +183,11 @@ function wga_update_table_from_csvfile($file) {
                 echo $data[$c] . "<br />\n";
             }
             */
-            wga_insert_or_update_record($data);
+            // Check there is a value email or ignore the row.
+            $vemail = $data[3];
+            if(strpos($vemail, "@") !== false){
+                wga_insert_or_update_record($data);
+            }
         }
         fclose($handle);
     } 
@@ -194,9 +198,12 @@ function wga_insert_or_update_record($row_data) {
     global $wpdb;
     $id = $row_data[0];
 	$updated_at = current_time( 'mysql' );
-    echo 'CREATED_AT ROW_DATA[6] '.  $row_data[6];
+    //echo 'CREATED_AT ROW_DATA[6] '.  $row_data[6];
     if ($row_data[10] == 1) {
+        //
         // field index 10 is Update Record by ID
+        //
+        //echo 'UPDATING record with ID: '.$row_data[0];
 		if ($wpdb->update(
 			"{$wpdb->prefix}wga_contact_list",
 			array( // data
@@ -216,16 +223,41 @@ function wga_insert_or_update_record($row_data) {
 		) 
 		== 1) 
 		{
-			echo '<div class="statusmsg">Updated record '.$row_data[0].'</div>';
+			//echo '<div class="statusmsg">Updated record '.$row_data[0].'</div>';
             return true;
 		} else {
             return false;
         }
     
+    }elseif ($row_data[10] == 2) {
+        //
+        // field index 10 is Insert record as is (restore data)
+        //
+        //echo 'INSERTING old record with ID: '.$row_data[0];
+		    $table_name = $wpdb->prefix . 'wga_contact_list';
+		    $wpdb->insert( 
+			    $table_name, 
+			    array( 
+                'id' => $row_data[0],
+				'first_name' => $row_data[1],
+				'last_name' => $row_data[2],
+				'email' => $row_data[3],
+                'source' => $row_data[4],
+                'unsubscribed' => $row_data[5],
+                'created_at' => date("Y-m-d H:i:s", strtotime($row_data[6])),
+                'updated_at' => date("Y-m-d H:i:s", strtotime($row_data[7])),
+                'is_verified' => $row_data[8],
+				'vhash' => $row_data[9], 
+			    ) 
+            );
+            //
+            // REturn status????
+            // 
     }elseif (empty($id)) {
         //
-        // Need to check if email is already in the table before insert!!!!
+        // No id field so this entry is new
         //
+        //echo 'INSERTING new record with no ID';
 		    $table_name = $wpdb->prefix . 'wga_contact_list';
 		    $wpdb->insert( 
 			    $table_name, 
@@ -245,6 +277,7 @@ function wga_insert_or_update_record($row_data) {
             // REturn status????
             // 
     }else{
+        //echo 'ignore record';
         //
         // Don't update existing record without field 10 directive.
         //
@@ -423,7 +456,7 @@ function wga_admin_manage() {
 		<input type='hidden' name='current_url' value='<?php echo $current_url ?>' >
         <input type="submit" name="submit" value="Submit CSV File Content" />
 	</p>
-    <p> CSV file download can act as a template for submitted content. New records should leave the ID field empty. Current records to be modified/updated should have a '1' in the final column. All other records will be ignored. </p>
+    <p> CSV file download can act as a template for submitted content. New records should leave the ID field empty. This field will be assigned on entry to the table. Current records to be modified/updated should have a '1' in the final column. Records that should be entered without any changes (i.e., the Updated_at field) should have a '2' in the final column. However, this operation will fail if a record with the same id or email already exists.  All other records will be ignored. </p>
     </fieldset>
 </form>
 <?php
