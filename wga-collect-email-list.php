@@ -106,10 +106,11 @@ function wga_db_table_install() {
 	global $wpdb;
 	global $wga_db_version;
 
-	$table_name = $wpdb->prefix . 'wga_contact_list';
 	$charset_collate = $wpdb->get_charset_collate();
 
-	$sql = "CREATE TABLE $table_name (
+	$list_table_name = $wpdb->prefix . 'wga_contact_list';
+
+	$sql = "CREATE TABLE $list_table_name (
 		id int(10) NOT NULL AUTO_INCREMENT,
 		first_name varchar(50),
 		last_name varchar(50),
@@ -128,7 +129,7 @@ function wga_db_table_install() {
 	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 	$dbdelta_result = dbDelta( $sql );
 	
-	if ( $wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name ) {
+	if ( $wpdb->get_var("SHOW TABLES LIKE '$list_table_name'") != $list_table_name ) {
 		// Table was not created !!
 		wp_die(
 			'<p>' .
@@ -136,7 +137,63 @@ function wga_db_table_install() {
 			    __( $dbdelta_result ) 
 				) .
 			sprintf(
-				__( 'This plugin can not be activated because the TABLE CREATION FAILED.', 'wga_collect_email_list' )
+				__( 'This plugin can not be activated because the Email list TABLE CREATION FAILED.', 'wga_collect_email_list' )
+			)
+			. '</p> <a href="' . admin_url( 'plugins.php' ) . '">' . __( 'go back', 'wga_collect_email_list' ) . '</a>'
+		);
+	}
+
+	$message_table_name = $wpdb->prefix . 'wga_message_list';
+
+	$sql = "CREATE TABLE $message_table_name (
+		id int(10) NOT NULL AUTO_INCREMENT,
+		message_subject text,
+		message_content longtext,
+		message_created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+		message_updated_at datetime,
+		UNIQUE KEY id (id)
+	) $charset_collate;";
+
+
+	$dbdelta_result = dbDelta( $sql );
+	
+	if ( $wpdb->get_var("SHOW TABLES LIKE '$message_table_name'") != $message_table_name ) {
+		// Table was not created !!
+		wp_die(
+			'<p>' .
+			sprintf( 
+			    __( $dbdelta_result ) 
+				) .
+			sprintf(
+				__( 'This plugin can not be activated because Message TABLE CREATION FAILED.', 'wga_collect_email_list' )
+			)
+			. '</p> <a href="' . admin_url( 'plugins.php' ) . '">' . __( 'go back', 'wga_collect_email_list' ) . '</a>'
+		);
+	}
+
+	$auto_table_name = $wpdb->prefix . 'wga_auto_list';
+
+	$sql = "CREATE TABLE $auto_table_name (
+		id int(10) NOT NULL AUTO_INCREMENT,
+		auto_message_id int(10),
+		auto_acction_tag varchar(50),
+		auto_created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+		auto_updated_at datetime,
+		UNIQUE KEY id (id)
+	) $charset_collate;";
+
+
+	$dbdelta_result = dbDelta( $sql );
+	
+	if ( $wpdb->get_var("SHOW TABLES LIKE '$auto_table_name'") != $auto_table_name ) {
+		// Table was not created !!
+		wp_die(
+			'<p>' .
+			sprintf( 
+			    __( $dbdelta_result ) 
+				) .
+			sprintf(
+				__( 'This plugin can not be activated because auto TABLE CREATION FAILED.', 'wga_collect_email_list' )
 			)
 			. '</p> <a href="' . admin_url( 'plugins.php' ) . '">' . __( 'go back', 'wga_collect_email_list' ) . '</a>'
 		);

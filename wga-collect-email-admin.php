@@ -471,6 +471,27 @@ function wga_admin_campaign() {
 	    die('Access Denied');
     }
     echo '<h1> Campaign page </h1>';
+    /**
+	 * 2.
+	 * This code renders an editor box and a submit button.
+	 * The box will have 15 rows, the quicktags won't load
+	 * and the PressThis configuration is used.
+	 */
+	$args = array(
+	    'textarea_rows' => 15,
+	    'teeny' => true,
+	    'quicktags' => false
+	);
+    echo '<pre>';
+	//var_dump(); 
+    print_r($_REQUEST);
+    echo '</pre>';
+    echo '<form method="post">';
+    echo '<div style="width:95%;">';
+    wp_editor( 'This is the default text!', 'wga_message_content'/*, $args*/ );
+	submit_button( 'Save content' );
+    echo '</form>';
+    echo '</div>';
 }
 
 ?>
