@@ -466,29 +466,47 @@ function wga_admin_manage() {
 
 
 function wga_admin_campaign() {
-    // Donate menu
+
     if(!current_user_can('manage_options')) {
 	    die('Access Denied');
     }
+
+    $editor_content = "Your letter...";
+    $editor_subject = "Your subject...";
+
+	if ($_SERVER["REQUEST_METHOD"] == "POST") {
+	    if (!empty($_POST["wga_message_content"])) {
+            $editor_content = $_POST['wga_message_content'];
+        }
+	    if (!empty($_POST["wga_message_subject"])) {
+            $editor_subject = $_POST['wga_message_subject'];
+        }
+    }
+
     echo '<h1> Campaign page </h1>';
-    /**
-	 * 2.
-	 * This code renders an editor box and a submit button.
-	 * The box will have 15 rows, the quicktags won't load
-	 * and the PressThis configuration is used.
-	 */
-	$args = array(
-	    'textarea_rows' => 15,
+
+	$subject_args = array(
+	    'textarea_rows' => 1,
 	    'teeny' => true,
 	    'quicktags' => false
+	);
+	$letter_args = array(
+	    'textarea_rows' => 15,
 	);
     echo '<pre>';
 	//var_dump(); 
     print_r($_REQUEST);
+    print_r($_POST);
     echo '</pre>';
+
     echo '<form method="post">';
     echo '<div style="width:95%;">';
-    wp_editor( 'This is the default text!', 'wga_message_content'/*, $args*/ );
+    //wp_editor( $editor_subject, 'wga_message_subject', $subject_args );
+    echo '<label for="subject" ><h2>Letter Subject:</h2></label>';
+    echo '<input name="wga_message_subject" id="subject" type="text" size="60" value="'.$editor_subject.'">';
+    echo '<br>';
+    echo '<br>';
+    wp_editor( $editor_content, 'wga_message_content', $letter_args );
 	submit_button( 'Save content' );
     echo '</form>';
     echo '</div>';
