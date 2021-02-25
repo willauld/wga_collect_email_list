@@ -1,6 +1,9 @@
 # WP_List_Table-Class-Plugin-Example
 A plugin demonstration on how to use WordPress WP_List_Table Class
 
+This code is discussed in the article at: https://www.sitepoint.com/using-wp_list_table-to-create-wordpress-admin-tables/
+
+
 # Database SQL dump
 
 ``` sql
