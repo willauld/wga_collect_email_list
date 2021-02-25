@@ -146,12 +146,12 @@ function wga_db_table_install() {
 	$message_table_name = $wpdb->prefix . 'wga_message_list';
 
 	$sql = "CREATE TABLE $message_table_name (
-		id int(10) NOT NULL AUTO_INCREMENT,
+		message_id int(10) NOT NULL AUTO_INCREMENT,
 		message_subject text,
 		message_content longtext,
 		message_created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
 		message_updated_at datetime,
-		UNIQUE KEY id (id)
+		UNIQUE KEY message_id (message_id)
 	) $charset_collate;";
 
 
