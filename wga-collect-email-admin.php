@@ -477,11 +477,11 @@ function wga_insert_message($subject, $content) {
 			    ) 
             );
         if ($result) {
-            $sql_cmd = $wpdb->prepare('SELECT message_id FROM %s WHERE message_subject = %s AND message_content = %s', $table_name, $subject, $content);
-            $results = $wpdb->get_results( $sql_cmd );
-	        echo wga_console_log(__LINE__."wga:: results:$results");
+            $sql_cmd = $wpdb->prepare("SELECT message_id FROM %s WHERE (message_subject = %s AND message_content = %s)", $table_name, $subject, $content);
+            //$results = $wpdb->get_results( $sql_cmd );
+	        //echo wga_console_log(__LINE__."wga:: results:$results");
             //$result = $reslts[0];
-            print_r($results[0]);
+            print_r($results);
         }
         return $result;
 }
