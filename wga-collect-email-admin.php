@@ -463,9 +463,33 @@ function wga_admin_manage() {
 
 }
 
+function wga_insert_message($subject, $content) {
+    global $wpdb;
+
+        //echo 'INSERTING new record with no ID yet';
+		    $table_name = $wpdb->prefix . 'wga_message_list';
+		$result = $wpdb->insert( 
+			    $table_name, 
+			    array( 
+				'message_subject' => $subject,
+				'message_content' => $content,
+                'message_created_at' => current_time( 'mysql' ),
+			    ) 
+            );
+        if ($result) {
+            $sql_cmd = $wpdb->prepare('SELECT message_id FROM %s WHERE message_subject = %s AND message_content = %s', $table_name, $subject, $content);
+            $results = $wpdb->get_results( $sql_cmd );
+	        echo wga_console_log(__LINE__."wga:: results:$results");
+            //$result = $reslts[0];
+            print_r($results[0]);
+        }
+        return $result;
+}
 
 
 function wga_admin_campaign() {
+    $ErrStr = '';
+    $m_id = -1;
 
     if(!current_user_can('manage_options')) {
 	    die('Access Denied');
@@ -473,13 +497,31 @@ function wga_admin_campaign() {
 
     $editor_content = "Your letter...";
     $editor_subject = "Your subject...";
+    $have_title = $have_content = 0;
 
 	if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	    if (!empty($_POST["wga_message_content"])) {
             $editor_content = $_POST['wga_message_content'];
+            $have_content = 1;
         }
 	    if (!empty($_POST["wga_message_subject"])) {
             $editor_subject = $_POST['wga_message_subject'];
+            $have_title = 1;
+        }
+        if (!empty($_POST['submit'])) {
+            if ($_POST['submit']=='Save content'){
+                if ($have_title != 1) {
+                    $ErrStr = 'To Save the content you must first give it a subject.';
+                }else{
+                    $m_id = wga_insert_message($editor_subject, $editor_content);
+                    $ErrStr = 'NOT AN ERROR: message_id: '. $m_id;
+                    if (!$m_id) {
+                        $ErrStr = 'insert_message() failed';
+                    }
+                }
+            }elseif ($_POST['submit']=='Update'){
+            }elseif ($_POST['submit']=='Delete'){
+            }
         }
     }
 
@@ -500,6 +542,9 @@ function wga_admin_campaign() {
     echo '</pre>';
 
     echo '<form method="post">';
+    if ($ErrStr != '') {
+        echo 'Error: '.$ErrStr;
+    }
     echo '<div style="width:95%;">';
     //wp_editor( $editor_subject, 'wga_message_subject', $subject_args );
     echo '<label for="subject" ><h2>Letter Subject:</h2></label>';
