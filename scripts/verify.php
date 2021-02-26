@@ -20,6 +20,7 @@
 		$data = htmlspecialchars($data);
 		return $data;
 	}
+    require_once(dirname(__FILE__) . '/wp-content\plugins\wga-collect-email-list/wga-collect-email-admin.php');
 	?>
 </head>
 <body>
@@ -75,13 +76,13 @@
 								'vhash' => "$hash",
 								'is_verified' => '0',
 							)
-						) 
-						== 1) 
-						{
+						) == 1) {
 							echo '<div class="statusmsg">Your email has been verified, Thank you.</div>';
+
+							do_action('wga_initial_welcome_email_hook', $id);
+							//wga_send_initial_email($id);
 						} else {
 							echo '<div class="statusmsg">Your email has been verified, but there was a problem updating your record. Please notify the admin. Thank you.</div>';
-
 						}
 					}else{
 						// No match -> invalid url or email has already been verified

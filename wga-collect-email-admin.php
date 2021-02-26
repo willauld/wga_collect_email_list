@@ -504,6 +504,86 @@ function wga_insert_message($subject, $content) {
         return $result;
 }
 
+// 10 is the priority, higher means executed first
+// 1 is number of arguments the function can accept
+add_action('wga_initial_welcome_email_hook', 'wga_send_initial_email', 10, 1);
+
+function wga_send_initial_email($email_id) {
+    global $wpdb;
+    //
+	// Send HTML email - Initial email
+	//
+    echo wga_console_log(__LINE__."send_initial_id:: ".$email_id); 
+
+    // Assume $m_id = 16 // later get this from admin setting
+    $m_id = 16;
+    $sql_cmd1 = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}wga_message_list WHERE (message_id = %d)", $m_id);
+    $mresults = $wpdb->get_results( $sql_cmd1 );
+
+    $subject = $mresults[0]->message_subject;
+    $content = $mresults[0]->message_content;
+
+    $sql_cmd2 = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}wga_contact_list WHERE (id = %d)", $email_id);
+    $email_results = $wpdb->get_results( $sql_cmd2 );
+
+    $first_name = $email_results[0]->first_name;
+    $last_name = $email_results[0]->last_name;
+    $email = $email_results[0]->email;
+
+	// get the blog administrator's email address
+	//$to = get_option( 'admin_email' );
+	
+    // test code - button code generated at: https://buttons.cm/
+    /*
+    $message = '<html>
+                    <head>
+                        <style type=“text/css”>
+                        </style>
+                    </head>
+                    <body>
+                        <img width="600" src="'.site_url().'/wp-content/uploads/2020/12/LogoOregonOpenPrimaries.png" alt="Let ALL voters vote!"/><br><br>
+                        <br><br>
+                        <br>' .
+                        $name . ',<br>
+                        Please click the following to verify your email address:
+                        <table width="100%" cellspacing="50" cellpadding="0">
+                            <tr>
+                                <td><td>
+                        <div><!--[if mso]>
+                            <v:roundrect            xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="'.site_url().'/verify.php?subscribe=join&email='.$email.'&vhash='.$hash.'" style="height:50px;v-text-anchor:middle;width:350px;" arcsize="8%" strokecolor="#262661" fillcolor="#262661">
+                                <w:anchorlock/>
+                                <center style="color:#FFEA0F;font-family:sans-serif;font-size:13px;font-weight:bold;">
+                                    Yes, subscribe me to Oregon Open Primaries!
+                                </center>
+                            </v:roundrect>
+                            <![endif]--><a href="'.site_url().'/verify.php?subscribe=join&email='.$email.'&vhash='.$hash.'" 
+                                style="background-color:#262661;border:1px solid #262661;border-radius:4px;color:#FFEA0F;display:inline-block;font-family:sans-serif;font-size:13px;font-weight:bold;line-height:50px;text-align:center;text-decoration:none;width:350px;-webkit-text-size-adjust:none;mso-hide:all;">
+                                    Yes, subscribe me to Oregon Open Primaries!
+                                </a>
+                        </div>
+                                </td></td>
+                            </tr>
+                        </table>
+                        Thanks <br>
+                        <br>
+                        Adding "' .$email. '" to email list. <br>
+                        <br>
+                    </body>
+                </html>';
+	*/ 
+	$to = "$first_name $last_name <$email>";
+	//$headers = "From: $name <$email>" . "\r\n";
+	$headers = "From: OregonOpenPrimaries.org <info@OregonOpenPrimaries.org> \r\n";
+	//$headers .= "Cc:OregonOpenPrimaries.org <info@OregonOpenPrimaries.org> \r\n";
+	//$headers .= "Cc:".get_option( 'admin_email' )." \r\n";
+	$headers .= "MIME-Version: 1.0\r\n";
+	$headers .= "Content-type: text/html\r\n";
+
+	// original: $email_response = wp_mail( $to, $subject, $message, $headers );
+	$email_response = wp_mail( $to, $subject, $content, $headers );
+
+	return $email_response;
+}
 
 function wga_admin_campaign() {
     $m_id = -1;
