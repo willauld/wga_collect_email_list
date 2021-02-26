@@ -463,6 +463,26 @@ function wga_admin_manage() {
 
 }
 
+function wga_update_message($id, $subject, $content) {
+    global $wpdb;
+    //echo 'UPDATING record with ID: '.$id;
+	if ($wpdb->update(
+		"{$wpdb->prefix}wga_message_list",
+		array( // data
+			'message_subject' => $subject,
+			'message_content' => $content,
+            'message_updated_at' => current_time( 'mysql' ),
+		),
+		array( //where
+			'message_id' => $id,
+		)
+	) == 1) {
+		//echo '<div class="statusmsg">Updated record '.$row_data[0].'</div>';
+        return true;
+	} 
+    return false;
+}
+
 function wga_insert_message($subject, $content) {
     global $wpdb;
 
@@ -477,19 +497,17 @@ function wga_insert_message($subject, $content) {
 			    ) 
             );
         if ($result) {
-            $sql_cmd = $wpdb->prepare("SELECT message_id FROM %s WHERE (message_subject = %s AND message_content = %s)", $table_name, $subject, $content);
-            //$results = $wpdb->get_results( $sql_cmd );
-	        //echo wga_console_log(__LINE__."wga:: results:$results");
-            //$result = $reslts[0];
-            print_r($results);
+            $sql_cmd = $wpdb->prepare("SELECT message_id FROM {$wpdb->prefix}wga_message_list WHERE (message_subject = %s AND message_content = %s)", $subject, $content);
+            $results = $wpdb->get_results( $sql_cmd );
+            $result = $results[0]->message_id;
         }
         return $result;
 }
 
 
 function wga_admin_campaign() {
-    $ErrStr = '';
     $m_id = -1;
+    $ErrStr = '';
 
     if(!current_user_can('manage_options')) {
 	    die('Access Denied');
@@ -500,6 +518,9 @@ function wga_admin_campaign() {
     $have_title = $have_content = 0;
 
 	if ($_SERVER["REQUEST_METHOD"] == "POST") {
+	    if (!empty($_POST["wga_message_id"])) {
+            $m_id = $_POST['wga_message_id'];
+        }
 	    if (!empty($_POST["wga_message_content"])) {
             $editor_content = $_POST['wga_message_content'];
             $have_content = 1;
@@ -514,18 +535,38 @@ function wga_admin_campaign() {
                     $ErrStr = 'To Save the content you must first give it a subject.';
                 }else{
                     $m_id = wga_insert_message($editor_subject, $editor_content);
-                    $ErrStr = 'NOT AN ERROR: message_id: '. $m_id;
+                    //$ErrStr = 'NOT AN ERROR: message_id: '. $m_id;
                     if (!$m_id) {
                         $ErrStr = 'insert_message() failed';
                     }
                 }
-            }elseif ($_POST['submit']=='Update'){
+            }elseif ($_POST['submit']=='Update content'){
+                    $success = wga_update_message($m_id, $editor_subject, $editor_content);
+                    if (!$success) {
+                        $ErrStr = 'update_message(id: '.$m_id.') failed';
+                    }
             }elseif ($_POST['submit']=='Delete'){
             }
         }
     }
+    echo '<style>';
+    echo '.msg_div {';
+    echo '  display: inline-block; ';
+    echo '  float:left; ';
+    echo '  clear: both ';
+    echo '}';
+    echo '</style>';
 
     echo '<h1> Campaign page </h1>';
+    echo '<div >';
+    echo '<div style="display: inline-block; padding:10;">' ;
+    echo '<h2> Messages </h2>';
+    echo '</div>';
+    echo '<div style="display: inline-block"> ';
+	submit_button( 'Add new' );
+    echo '</div>';
+    echo '</div>';
+
 
 	$subject_args = array(
 	    'textarea_rows' => 1,
@@ -546,13 +587,17 @@ function wga_admin_campaign() {
         echo 'Error: '.$ErrStr;
     }
     echo '<div style="width:95%;">';
-    //wp_editor( $editor_subject, 'wga_message_subject', $subject_args );
+    echo '<input type="hidden" name="wga_message_id" value="'.$m_id.'">';
     echo '<label for="subject" ><h2>Letter Subject:</h2></label>';
     echo '<input name="wga_message_subject" id="subject" type="text" size="60" value="'.$editor_subject.'">';
     echo '<br>';
     echo '<br>';
     wp_editor( $editor_content, 'wga_message_content', $letter_args );
-	submit_button( 'Save content' );
+    if ($m_id > 0){
+	    submit_button( 'Update content' );
+    }else {
+	    submit_button( 'Save content' );
+    }
     echo '</form>';
     echo '</div>';
 }
