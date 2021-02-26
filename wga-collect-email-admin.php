@@ -522,11 +522,11 @@ function wga_admin_campaign() {
             $m_id = $_POST['wga_message_id'];
         }
 	    if (!empty($_POST["wga_message_content"])) {
-            $editor_content = $_POST['wga_message_content'];
+            $editor_content = esc_sql($_POST['wga_message_content']);
             $have_content = 1;
         }
 	    if (!empty($_POST["wga_message_subject"])) {
-            $editor_subject = $_POST['wga_message_subject'];
+            $editor_subject = esc_sql($_POST['wga_message_subject']);
             $have_title = 1;
         }
         if (!empty($_POST['submit'])) {
@@ -549,17 +549,10 @@ function wga_admin_campaign() {
             }
         }
     }
-    echo '<style>';
-    echo '.msg_div {';
-    echo '  display: inline-block; ';
-    echo '  float:left; ';
-    echo '  clear: both ';
-    echo '}';
-    echo '</style>';
 
     echo '<h1> Campaign page </h1>';
     echo '<div >';
-    echo '<div style="display: inline-block; padding:10;">' ;
+    echo '<div style="display: inline-block; padding:20;">' ;
     echo '<h2> Messages </h2>';
     echo '</div>';
     echo '<div style="display: inline-block"> ';
