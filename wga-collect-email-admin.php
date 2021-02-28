@@ -504,6 +504,14 @@ function wga_insert_message($subject, $content) {
         return $result;
 }
 
+function wga_fetch_message($edit_id) {
+    global $wpdb;
+    $sql_cmd = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}wga_message_list WHERE (message_id = %s)", $edit_id);
+    $results = $wpdb->get_results( $sql_cmd );
+    return $results[0];
+    //$result = $results[0]->message_id;
+}
+
 // 10 is the priority, higher means executed first
 // 1 is number of arguments the function can accept
 add_action('wga_initial_welcome_email_hook', 'wga_send_initial_email', 10, 1);
@@ -515,13 +523,13 @@ function wga_send_initial_email($email_id) {
 	//
     echo wga_console_log(__LINE__."send_initial_id:: ".$email_id); 
 
-    // Assume $m_id = 16 // later get this from admin setting
-    $m_id = 16;
+    // Assume $m_id = 18 // later get this from admin setting
+    $m_id = 18;
     $sql_cmd1 = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}wga_message_list WHERE (message_id = %d)", $m_id);
     $mresults = $wpdb->get_results( $sql_cmd1 );
 
-    $subject = $mresults[0]->message_subject;
-    $content = $mresults[0]->message_content;
+    $subject = stripslashes($mresults[0]->message_subject);
+    $content = stripslashes($mresults[0]->message_content);
 
     $sql_cmd2 = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}wga_contact_list WHERE (id = %d)", $email_id);
     $email_results = $wpdb->get_results( $sql_cmd2 );
@@ -530,6 +538,17 @@ function wga_send_initial_email($email_id) {
     $last_name = $email_results[0]->last_name;
     $email = $email_results[0]->email;
 
+    $message = '<html>
+                    <head>
+                        <style type=“text/css”>
+                        </style>
+                    </head>
+                    <body>
+                        <img width="600" src="'.site_url().'/wp-content/uploads/2020/12/LogoOregonOpenPrimaries.png" alt="Let ALL voters vote!"/><br><br>
+                        <br><br>
+                        '.$content.'
+                    </body>
+                </html>';
 	// get the blog administrator's email address
 	//$to = get_option( 'admin_email' );
 	
@@ -580,13 +599,16 @@ function wga_send_initial_email($email_id) {
 	$headers .= "Content-type: text/html\r\n";
 
 	// original: $email_response = wp_mail( $to, $subject, $message, $headers );
-	$email_response = wp_mail( $to, $subject, $content, $headers );
+	$email_response = wp_mail( $to, $subject, $message, $headers );
+	//$email_response = wp_mail( $to, $subject, $content, $headers );
 
 	return $email_response;
 }
 
 function wga_admin_campaign() {
     $m_id = -1;
+    $m_saved = 0;
+    $edit_id = -1;
     $ErrStr = '';
 
     if(!current_user_can('manage_options')) {
@@ -603,13 +625,16 @@ function wga_admin_campaign() {
         }
 	    if (!empty($_POST["wga_message_content"])) {
             //$editor_content = esc_sql($_POST['wga_message_content']);
-            $editor_content = $_POST['wga_message_content'];
+            $editor_content = stripslashes($_POST['wga_message_content']);
             $have_content = 1;
         }
 	    if (!empty($_POST["wga_message_subject"])) {
             //$editor_subject = esc_sql($_POST['wga_message_subject']);
-            $editor_subject = $_POST['wga_message_subject'];
+            $editor_subject = stripslashes($_POST['wga_message_subject']);
             $have_title = 1;
+        }
+        if (!empty($_POST['wga_edit_id'])) {
+            $edit_id = $_POST['wga_edit_id'];
         }
         if (!empty($_POST['submit'])) {
             if ($_POST['submit']=='Save content'){
@@ -628,19 +653,40 @@ function wga_admin_campaign() {
                         $ErrStr = 'update_message(id: '.$m_id.') failed';
                     }
             }elseif ($_POST['submit']=='Delete'){
+            }elseif ($_POST['submit']=='Add new'){
+                if (/*editor content changed*/ $m_saved == 0 ){
+                    // has the current message, if there is one, been saved?
+                    // is there a specific message id requested?
+                    // is it different than the current m_id?
+                    // if all is safe load the new message from the db
+                    $m_record = wga_fetch_message($edit_id); // need to check fetch success
+                    //$result = $m_record->message_id;
+                    $editor_content = $m_record->message_content;
+                    $editor_subject = $m_record->message_subject;
+                    $m_id = $edit_id;
+                    $edit_id = -1;
+                }
             }
         }
     }
 
     echo '<h1> Campaign page </h1>';
+    echo '<form method="post">';
     echo '<div >';
     echo '<div style="display: inline-block; padding:20;">' ;
     echo '<h2> Messages </h2>';
+    echo '</div>';
+    echo '<b>&nbsp;<b/>';
+    echo '<div style="display: inline-block"> ';
+    //echo '<input type="hidden" name="wga_message_id" value="'.$m_id.'">';
+    echo '<label for="m_id" ><h2>Message ID:</h2></label>';
+    echo '<input name="wga_edit_id" id="m_id" type="text" size="6" value="'.$m_id.'">';
     echo '</div>';
     echo '<div style="display: inline-block"> ';
 	submit_button( 'Add new' );
     echo '</div>';
     echo '</div>';
+    echo '</form>';
 
 
 	$subject_args = array(
@@ -654,7 +700,7 @@ function wga_admin_campaign() {
     echo '<pre>';
 	//var_dump(); 
     print_r($_REQUEST);
-    print_r($_POST);
+    //print_r($_POST);
     echo '</pre>';
 
     echo '<form method="post">';
@@ -663,6 +709,7 @@ function wga_admin_campaign() {
     }
     echo '<div style="width:95%;">';
     echo '<input type="hidden" name="wga_message_id" value="'.$m_id.'">';
+    echo '<input type="hidden" name="wga_message_saved" value="'.$m_id.'">';
     echo '<label for="subject" ><h2>Letter Subject:</h2></label>';
     echo '<input name="wga_message_subject" id="subject" type="text" size="60" value="'.$editor_subject.'">';
     echo '<br>';
