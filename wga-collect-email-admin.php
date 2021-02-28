@@ -523,8 +523,8 @@ function wga_send_initial_email($email_id) {
 	//
     echo wga_console_log(__LINE__."send_initial_id:: ".$email_id); 
 
-    // Assume $m_id = 18 // later get this from admin setting
-    $m_id = 18;
+    // Assume $m_id = 1 // later get this from admin setting
+    $m_id = 1;
     $sql_cmd1 = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}wga_message_list WHERE (message_id = %d)", $m_id);
     $mresults = $wpdb->get_results( $sql_cmd1 );
 

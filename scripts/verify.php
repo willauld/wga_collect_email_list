@@ -20,7 +20,8 @@
 		$data = htmlspecialchars($data);
 		return $data;
 	}
-    require_once(dirname(__FILE__) . '/wp-content\plugins\wga-collect-email-list/wga-collect-email-admin.php');
+    //require_once(dirname(__FILE__) . '/wp-content\plugins\wga-collect-email-list/wga-collect-email-admin.php');
+    require_once('./wp-content/plugins/wga-collect-email-list/wga-collect-email-admin.php');
 	?>
 </head>
 <body>
