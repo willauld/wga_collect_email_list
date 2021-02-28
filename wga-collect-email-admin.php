@@ -6,9 +6,33 @@ function wga_admin_options(){
     if(!current_user_can('manage_options')) {
 	    die('Access Denied');
     }
+
+	$m_id = get_option( 'initialwelcomemessageid' );
+
+	if ($_SERVER["REQUEST_METHOD"] == "POST") {
+	    if (!empty($_POST["submit"]) && $_POST["submit"] == 'Assign new message id for the Initial Welcome') {
+	        if (!empty($_POST["initwelcome"])) {
+	            $m_id = $_POST["initwelcome"] ;
+	            add_option( 'initialwelcomemessageid', $m_id );
+                //$filterrecords = sanitize_text_field($_POST["filterrecords"]);
+            }
+        }
+    }
+    echo '<pre>';
+    print_r($_REQUEST);
+    echo '</pre>';
+
 	echo '<div class="wrap">';
 	echo '	<h2>Welcome To My Options page</h2>';
 	echo '</div>';
+    echo '<br><br>';
+
+
+    echo '<form method="post">';
+    echo '<label for="initialwelcome" >Initial Welcome Message ID</label>';
+    echo '<input id="initialwelcome" name="initwelcome" type="number" value="'.$m_id.'" >';
+    submit_button("Assign new message id for the Initial Welcome");
+    echo '</form>';
 
     /*
     $my_ob_level = ob_get_level();
@@ -523,8 +547,7 @@ function wga_send_initial_email($email_id) {
 	//
     echo wga_console_log(__LINE__."send_initial_id:: ".$email_id); 
 
-    // Assume $m_id = 1 // later get this from admin setting
-    $m_id = 1;
+	$m_id = get_option( 'initialwelcomemessageid' );
     $sql_cmd1 = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}wga_message_list WHERE (message_id = %d)", $m_id);
     $mresults = $wpdb->get_results( $sql_cmd1 );
 
