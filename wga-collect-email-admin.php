@@ -255,10 +255,14 @@ function wga_insert_or_update_record($row_data) {
     
     }elseif ($row_data[10] == 2) {
         //
-        // field index 10 is Insert record as is (restore data)
+        // field index 10 is Insert record as is (restore data) 
+        //  May need to add hash
         //
         //echo 'INSERTING old record with ID: '.$row_data[0];
 		    $table_name = $wpdb->prefix . 'wga_contact_list';
+            if ($row_data[9] == '') {
+		        $row_data[9] = md5( rand(0,1000) ); // Generate random 32 character hash
+            }
 		    $wpdb->insert( 
 			    $table_name, 
 			    array( 
