@@ -532,6 +532,9 @@ function wga_fetch_message($edit_id) {
     global $wpdb;
     $sql_cmd = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}wga_message_list WHERE (message_id = %s)", $edit_id);
     $results = $wpdb->get_results( $sql_cmd );
+    if (!$results) {
+        return 0;
+    }
     return $results[0];
     //$result = $results[0]->message_id;
 }
@@ -638,8 +641,8 @@ function wga_admin_campaign() {
 	    die('Access Denied');
     }
 
-    $editor_content = "Your letter...";
-    $editor_subject = "Your subject...";
+    $editor_content = "";
+    $editor_subject = "";
     $have_title = $have_content = 0;
 
 	if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -682,12 +685,21 @@ function wga_admin_campaign() {
                     // is there a specific message id requested?
                     // is it different than the current m_id?
                     // if all is safe load the new message from the db
-                    $m_record = wga_fetch_message($edit_id); // need to check fetch success
-                    //$result = $m_record->message_id;
-                    $editor_content = $m_record->message_content;
-                    $editor_subject = $m_record->message_subject;
-                    $m_id = $edit_id;
-                    $edit_id = -1;
+                    if ($edit_id > 0) {
+                        $m_record = wga_fetch_message($edit_id); // need to check fetch success
+                        //$result = $m_record->message_id;
+                        if ($m_record) {
+                            $editor_content = $m_record->message_content;
+                            $editor_subject = $m_record->message_subject;
+                            $m_id = $edit_id;
+                            $edit_id = -1;
+                        }
+                    }else{
+                        $m_id = -1;
+                        $editor_content = "";
+                        $editor_subject = "";
+                        $have_title = $have_content = 0;
+                    }
                 }
             }
         }
@@ -703,7 +715,7 @@ function wga_admin_campaign() {
     echo '<div style="display: inline-block"> ';
     //echo '<input type="hidden" name="wga_message_id" value="'.$m_id.'">';
     echo '<label for="m_id" ><h2>Message ID:</h2></label>';
-    echo '<input name="wga_edit_id" id="m_id" type="text" size="6" value="'.$m_id.'">';
+    echo '<input name="wga_edit_id" id="m_id" type="text" size="6" value="'.$edit_id.'">';
     echo '</div>';
     echo '<div style="display: inline-block"> ';
 	submit_button( 'Add new' );
@@ -730,6 +742,7 @@ function wga_admin_campaign() {
     if ($ErrStr != '') {
         echo 'Error: '.$ErrStr;
     }
+    echo '<h2>Current Message id: '.$m_id.'</h2>';
     echo '<div style="width:95%;">';
     echo '<input type="hidden" name="wga_message_id" value="'.$m_id.'">';
     echo '<input type="hidden" name="wga_message_saved" value="'.$m_id.'">';
