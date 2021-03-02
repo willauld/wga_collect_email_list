@@ -102,12 +102,17 @@ class WGA_Message_List extends WP_List_Table {
 	 */
 	public function column_default( $item, $column_name ) {
 		switch ( $column_name ) {
-			case 'message_id':
-			case 'message_subject':
-			case 'message_content':
-			case 'message_created_at':
-			case 'message_updated_at':
-				return $item[ $column_name ];
+			case 'id':
+				return $item[ 'message_id' ];
+			case 'Subject':
+				return $item[ 'message_subject' ];
+			case 'Content':
+				return $item[ 'message_content' ];
+			case 'Created_at':
+				return $item[ 'message_created_at' ];
+			case 'Updated_at':
+				return $item[ 'message_updated_at' ];
+				//return $item[ 'message_'.$column_name ];
 			default:
 				return print_r( $item, true ); //Show the whole array for troubleshooting purposes
 		}
@@ -174,11 +179,11 @@ class WGA_Message_List extends WP_List_Table {
 	 */
 	public function get_sortable_columns() {
 		$sortable_columns = array(
-			'id' => array( 'id', true ),
-			'subject' => array( 'subject', false ),
-			'content' => array( 'content', false ),
-			'created_at' => array( 'created_at', false ),
-			'updated_at' => array( 'updated_at', false )
+			'id' => array( 'message_id', true ),
+			'Subject' => array( 'message_subject', true ),
+			'Content' => array( 'message_content', true ),
+			'Created_at' => array( 'message_created_at', true ),
+			'Updated_at' => array( 'message_updated_at', true )
 		);
 
 		return $sortable_columns;
@@ -217,7 +222,7 @@ class WGA_Message_List extends WP_List_Table {
 			'per_page'    => $per_page //WE have to determine how many items to show on a page
 		] );
 
-		$this->items = self::get_customers( $per_page, $current_page );
+		$this->items = self::get_messages( $per_page, $current_page );
 	}
 
 	public function process_bulk_action() {
@@ -234,9 +239,10 @@ class WGA_Message_List extends WP_List_Table {
 			else {
 				self::delete_customer( absint( $_GET['message'] ) );
 
-		                // esc_url_raw() is used to prevent converting ampersand in url to "#038;"
-		                // add_query_arg() return the current url
-		                wp_redirect( esc_url_raw(add_query_arg()) );
+		        // esc_url_raw() is used to prevent converting ampersand in url to "#038;"
+		        // add_query_arg() return the current url
+		    	wp_redirect( 'http://wp2.test/wp-admin/admin.php?page=Campaign' );
+		        //wp_redirect( esc_url_raw(add_query_arg()) );
 				exit;
 			}
 
@@ -256,8 +262,9 @@ class WGA_Message_List extends WP_List_Table {
 			}
 
 			// esc_url_raw() is used to prevent converting ampersand in url to "#038;"
-		        // add_query_arg() return the current url
-		        wp_redirect( esc_url_raw(add_query_arg()) );
+		    // add_query_arg() return the current url
+		    //wp_redirect( esc_url_raw(add_query_arg()) );
+		    wp_redirect( 'http://wp2.test/wp-admin/admin.php?page=Campaign' );
 			exit;
 		}
 	}
@@ -307,8 +314,6 @@ class WGA_Plugin {
 	public function wga_plugin_settings_page() {
 		?>
 		<div class="wrap">
-			<h2>WP_List_Table Class Example</h2>
-
 			<div id="poststuff">
 				<div id="post-body" class="metabox-holder columns-2">
 					<div id="post-body-content">
