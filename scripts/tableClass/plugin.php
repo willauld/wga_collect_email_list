@@ -21,7 +21,8 @@ class WGA_Message_List extends WP_List_Table {
 		parent::__construct( [
 			'singular' => __( 'Message', 'sp' ), //singular name of the listed records
 			'plural'   => __( 'Messages', 'sp' ), //plural name of the listed records
-			'ajax'     => false //does this table support ajax?
+			'ajax'     => false, //does this table support ajax?
+			'screen'   => 'Campaign'
 		] );
 
 	}
@@ -241,8 +242,10 @@ class WGA_Message_List extends WP_List_Table {
 
 		        // esc_url_raw() is used to prevent converting ampersand in url to "#038;"
 		        // add_query_arg() return the current url
-		    	wp_redirect( 'http://wp2.test/wp-admin/admin.php?page=Campaign' );
+		    	//wp_redirect( 'http://wp2.test/wp-admin/admin.php?page=Campaign' );
 		        //wp_redirect( esc_url_raw(add_query_arg()) );
+				echo 'Ob_get_level(): '.ob_get_level();
+				echo 'ob_get_content():: '.ob_get_contents();
 				exit;
 			}
 
@@ -264,7 +267,9 @@ class WGA_Message_List extends WP_List_Table {
 			// esc_url_raw() is used to prevent converting ampersand in url to "#038;"
 		    // add_query_arg() return the current url
 		    //wp_redirect( esc_url_raw(add_query_arg()) );
-		    wp_redirect( 'http://wp2.test/wp-admin/admin.php?page=Campaign' );
+		    //wp_redirect( 'http://wp2.test/wp-admin/admin.php?page=Campaign' );
+				echo 'Ob_get_level(): '.ob_get_level();
+				echo 'ob_get_content():: '.ob_get_contents();
 			exit;
 		}
 	}
