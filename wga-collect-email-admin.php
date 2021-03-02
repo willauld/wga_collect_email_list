@@ -180,6 +180,7 @@ function csv_submission_processor() {
         */
 
         wga_update_table_from_csvfile($upload['file']);
+        // FIXME unlink file here?
 
 	    wp_redirect( $_POST["current_url"] );
 	    die();

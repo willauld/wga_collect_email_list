@@ -226,6 +226,8 @@ class WGA_Message_List extends WP_List_Table {
 		$this->items = self::get_messages( $per_page, $current_page );
 	}
 
+   //&&&& add_action( 'admin_post_apply_bulk_action', 'process_bulk_action' );&&&& FIXME trying at construction of WGA_Plugin();
+
 	public function process_bulk_action() {
 
 		//Detect when a bulk action is being triggered...
@@ -244,9 +246,10 @@ class WGA_Message_List extends WP_List_Table {
 		        // add_query_arg() return the current url
 		    	//wp_redirect( 'http://wp2.test/wp-admin/admin.php?page=Campaign' );
 		        //wp_redirect( esc_url_raw(add_query_arg()) );
-				echo 'Ob_get_level(): '.ob_get_level();
-				echo 'ob_get_content():: '.ob_get_contents();
-				exit;
+				//echo 'Ob_get_level(): '.ob_get_level();
+				//echo 'ob_get_content():: '.ob_get_contents();
+	            //wp_redirect( $_POST["current_url"] );
+				//exit;
 			}
 
 		}
@@ -268,9 +271,10 @@ class WGA_Message_List extends WP_List_Table {
 		    // add_query_arg() return the current url
 		    //wp_redirect( esc_url_raw(add_query_arg()) );
 		    //wp_redirect( 'http://wp2.test/wp-admin/admin.php?page=Campaign' );
-				echo 'Ob_get_level(): '.ob_get_level();
-				echo 'ob_get_content():: '.ob_get_contents();
-			exit;
+				//echo 'Ob_get_level(): '.ob_get_level();
+				//echo 'ob_get_content():: '.ob_get_contents();
+	        //wp_redirect( $_POST["current_url"] );
+			//exit;
 		}
 	}
 
@@ -315,6 +319,7 @@ class WGA_Plugin {
 
 	/**
 	 * Plugin settings page
+    <form action='<?php admin_url( 'admin-post.php' ); ?>'' method="post">
 	 */
 	public function wga_plugin_settings_page() {
 		?>
@@ -323,7 +328,9 @@ class WGA_Plugin {
 				<div id="post-body" class="metabox-holder columns-2">
 					<div id="post-body-content">
 						<div class="meta-box-sortables ui-sortable">
-							<form method="post">
+                            <form method="post">
+		                        <input type='hidden' name='action' value='apply_bulk_action'>
+		                        <input type='hidden' name='current_url' value='<?php echo $current_url ?>' >
 								<?php
 								$this->messages_obj->prepare_items();
 								$this->messages_obj->display(); ?>
@@ -368,5 +375,6 @@ class WGA_Plugin {
 
 
 add_action( 'plugins_loaded', function () {
-	WGA_Plugin::get_instance();
+    WGA_Plugin::get_instance();
+    //add_action( 'admin_post_apply_bulk_action', 'process_bulk_action' );
 } );
