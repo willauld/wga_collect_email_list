@@ -13,14 +13,14 @@ if ( ! class_exists( 'WP_List_Table' ) ) {
 	require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 }
 
-class Customers_List extends WP_List_Table {
+class WGA_Message_List extends WP_List_Table {
 
 	/** Class constructor */
 	public function __construct() {
 
 		parent::__construct( [
-			'singular' => __( 'Customer', 'sp' ), //singular name of the listed records
-			'plural'   => __( 'Customers', 'sp' ), //plural name of the listed records
+			'singular' => __( 'Message', 'sp' ), //singular name of the listed records
+			'plural'   => __( 'Messages', 'sp' ), //plural name of the listed records
 			'ajax'     => false //does this table support ajax?
 		] );
 
@@ -35,11 +35,11 @@ class Customers_List extends WP_List_Table {
 	 *
 	 * @return mixed
 	 */
-	public static function get_customers( $per_page = 5, $page_number = 1 ) {
+	public static function get_messages( $per_page = 5, $page_number = 1 ) {
 
 		global $wpdb;
 
-		$sql = "SELECT * FROM {$wpdb->prefix}customers";
+		$sql = "SELECT * FROM {$wpdb->prefix}wga_message_list";
 
 		if ( ! empty( $_REQUEST['orderby'] ) ) {
 			$sql .= ' ORDER BY ' . esc_sql( $_REQUEST['orderby'] );
@@ -61,12 +61,12 @@ class Customers_List extends WP_List_Table {
 	 *
 	 * @param int $id customer ID
 	 */
-	public static function delete_customer( $id ) {
+	public static function delete_message( $id ) {
 		global $wpdb;
 
 		$wpdb->delete(
-			"{$wpdb->prefix}customers",
-			[ 'ID' => $id ],
+			"{$wpdb->prefix}wga_message_list",
+			[ 'message_id' => $id ],
 			[ '%d' ]
 		);
 	}
@@ -80,7 +80,7 @@ class Customers_List extends WP_List_Table {
 	public static function record_count() {
 		global $wpdb;
 
-		$sql = "SELECT COUNT(*) FROM {$wpdb->prefix}customers";
+		$sql = "SELECT COUNT(*) FROM {$wpdb->prefix}wga_message_list";
 
 		return $wpdb->get_var( $sql );
 	}
@@ -88,7 +88,7 @@ class Customers_List extends WP_List_Table {
 
 	/** Text displayed when no customer data is available */
 	public function no_items() {
-		_e( 'No customers avaliable.', 'sp' );
+		_e( 'No messages avaliable.', 'sp' );
 	}
 
 
@@ -102,8 +102,11 @@ class Customers_List extends WP_List_Table {
 	 */
 	public function column_default( $item, $column_name ) {
 		switch ( $column_name ) {
-			case 'address':
-			case 'city':
+			case 'message_id':
+			case 'message_subject':
+			case 'message_content':
+			case 'message_created_at':
+			case 'message_updated_at':
 				return $item[ $column_name ];
 			default:
 				return print_r( $item, true ); //Show the whole array for troubleshooting purposes
@@ -119,7 +122,7 @@ class Customers_List extends WP_List_Table {
 	 */
 	function column_cb( $item ) {
 		return sprintf(
-			'<input type="checkbox" name="bulk-delete[]" value="%s" />', $item['ID']
+			'<input type="checkbox" name="bulk-delete[]" value="%s" />', $item['message_id']
 		);
 	}
 
@@ -133,12 +136,12 @@ class Customers_List extends WP_List_Table {
 	 */
 	function column_name( $item ) {
 
-		$delete_nonce = wp_create_nonce( 'sp_delete_customer' );
+		$delete_nonce = wp_create_nonce( 'sp_delete_message' );
 
 		$title = '<strong>' . $item['name'] . '</strong>';
 
 		$actions = [
-			'delete' => sprintf( '<a href="?page=%s&action=%s&customer=%s&_wpnonce=%s">Delete</a>', esc_attr( $_REQUEST['page'] ), 'delete', absint( $item['ID'] ), $delete_nonce )
+			'delete' => sprintf( '<a href="?page=%s&action=%s&message=%s&_wpnonce=%s">Delete</a>', esc_attr( $_REQUEST['page'] ), 'delete', absint( $item['message_id'] ), $delete_nonce )
 		];
 
 		return $title . $this->row_actions( $actions );
@@ -153,9 +156,11 @@ class Customers_List extends WP_List_Table {
 	function get_columns() {
 		$columns = [
 			'cb'      => '<input type="checkbox" />',
-			'name'    => __( 'Name', 'sp' ),
-			'address' => __( 'Address', 'sp' ),
-			'city'    => __( 'City', 'sp' )
+			'id'    => __( 'id', 'sp' ),
+			'Subject'    => __( 'Subject', 'sp' ),
+			'Content' => __( 'Content', 'sp' ),
+			'Created_at'    => __( 'Created_at', 'sp' ),
+			'Updated_at'    => __( 'Updated_at', 'sp' )
 		];
 
 		return $columns;
@@ -169,8 +174,11 @@ class Customers_List extends WP_List_Table {
 	 */
 	public function get_sortable_columns() {
 		$sortable_columns = array(
-			'name' => array( 'name', true ),
-			'city' => array( 'city', false )
+			'id' => array( 'id', true ),
+			'subject' => array( 'subject', false ),
+			'content' => array( 'content', false ),
+			'created_at' => array( 'created_at', false ),
+			'updated_at' => array( 'updated_at', false )
 		);
 
 		return $sortable_columns;
@@ -200,7 +208,7 @@ class Customers_List extends WP_List_Table {
 		/** Process bulk action */
 		$this->process_bulk_action();
 
-		$per_page     = $this->get_items_per_page( 'customers_per_page', 5 );
+		$per_page     = $this->get_items_per_page( 'messages_per_page', 5 );
 		$current_page = $this->get_pagenum();
 		$total_items  = self::record_count();
 
@@ -220,11 +228,11 @@ class Customers_List extends WP_List_Table {
 			// In our file that handles the request, verify the nonce.
 			$nonce = esc_attr( $_REQUEST['_wpnonce'] );
 
-			if ( ! wp_verify_nonce( $nonce, 'sp_delete_customer' ) ) {
+			if ( ! wp_verify_nonce( $nonce, 'sp_delete_message' ) ) {
 				die( 'Go get a life script kiddies' );
 			}
 			else {
-				self::delete_customer( absint( $_GET['customer'] ) );
+				self::delete_customer( absint( $_GET['message'] ) );
 
 		                // esc_url_raw() is used to prevent converting ampersand in url to "#038;"
 		                // add_query_arg() return the current url
@@ -243,7 +251,7 @@ class Customers_List extends WP_List_Table {
 
 			// loop over the array of record IDs and delete them
 			foreach ( $delete_ids as $id ) {
-				self::delete_customer( $id );
+				self::delete_message( $id );
 
 			}
 
@@ -257,18 +265,18 @@ class Customers_List extends WP_List_Table {
 }
 
 
-class SP_Plugin {
+class WGA_Plugin {
 
 	// class instance
 	static $instance;
 
 	// customer WP_List_Table object
-	public $customers_obj;
+	public $messages_obj;
 
 	// class constructor
 	public function __construct() {
 		add_filter( 'set-screen-option', [ __CLASS__, 'set_screen' ], 10, 3 );
-		add_action( 'admin_menu', [ $this, 'plugin_menu' ] );
+		//add_action( 'admin_menu', [ $this, 'plugin_menu' ] );
 	}
 
 
@@ -276,6 +284,7 @@ class SP_Plugin {
 		return $value;
 	}
 
+    /*
 	public function plugin_menu() {
 
 		$hook = add_menu_page(
@@ -289,12 +298,13 @@ class SP_Plugin {
 		add_action( "load-$hook", [ $this, 'screen_option' ] );
 
 	}
+    */
 
 
 	/**
 	 * Plugin settings page
 	 */
-	public function plugin_settings_page() {
+	public function wga_plugin_settings_page() {
 		?>
 		<div class="wrap">
 			<h2>WP_List_Table Class Example</h2>
@@ -305,8 +315,8 @@ class SP_Plugin {
 						<div class="meta-box-sortables ui-sortable">
 							<form method="post">
 								<?php
-								$this->customers_obj->prepare_items();
-								$this->customers_obj->display(); ?>
+								$this->messages_obj->prepare_items();
+								$this->messages_obj->display(); ?>
 							</form>
 						</div>
 					</div>
@@ -324,14 +334,14 @@ class SP_Plugin {
 
 		$option = 'per_page';
 		$args   = [
-			'label'   => 'Customers',
+			'label'   => 'Messages',
 			'default' => 5,
-			'option'  => 'customers_per_page'
+			'option'  => 'messages_per_page'
 		];
 
 		add_screen_option( $option, $args );
 
-		$this->customers_obj = new Customers_List();
+		$this->messages_obj = new WGA_Message_List();
 	}
 
 
@@ -348,5 +358,5 @@ class SP_Plugin {
 
 
 add_action( 'plugins_loaded', function () {
-	SP_Plugin::get_instance();
+	WGA_Plugin::get_instance();
 } );

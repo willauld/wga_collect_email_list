@@ -710,6 +710,15 @@ function wga_admin_campaign() {
     }
 
     echo '<h1> Campaign page </h1>';
+    //
+    // message list table display
+    //
+	WGA_Plugin::get_instance()->wga_plugin_settings_page();
+
+
+    // 
+    // message editing section below
+    //
     echo '<form method="post">';
     echo '<div >';
     echo '<div style="display: inline-block; padding:20;">' ;
