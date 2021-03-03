@@ -134,17 +134,17 @@ class WGA_Message_List extends WP_List_Table {
 
 
 	/**
-	 * Method for name column
+	 * Method for id column
 	 *
 	 * @param array $item an array of DB data
 	 *
 	 * @return string
 	 */
-	function column_name( $item ) {
+	function column_id( $item ) {
 
 		$delete_nonce = wp_create_nonce( 'sp_delete_message' );
 
-		$title = '<strong>' . $item['name'] . '</strong>';
+		$title = '<strong>' . $item['message_id'] . '</strong>';
 
 		$actions = [
 			'delete' => sprintf( '<a href="?page=%s&action=%s&message=%s&_wpnonce=%s">Delete</a>', esc_attr( $_REQUEST['page'] ), 'delete', absint( $item['message_id'] ), $delete_nonce )
@@ -182,7 +182,7 @@ class WGA_Message_List extends WP_List_Table {
 		$sortable_columns = array(
 			'id' => array( 'message_id', true ),
 			'Subject' => array( 'message_subject', true ),
-			'Content' => array( 'message_content', true ),
+			//'Content' => array( 'message_content', false ),
 			'Created_at' => array( 'message_created_at', true ),
 			'Updated_at' => array( 'message_updated_at', true )
 		);
@@ -229,18 +229,23 @@ class WGA_Message_List extends WP_List_Table {
    //&&&& add_action( 'admin_post_apply_bulk_action', 'process_bulk_action' );&&&& FIXME trying at construction of WGA_Plugin();
 
 	public function process_bulk_action() {
-
 		//Detect when a bulk action is being triggered...
 		if ( 'delete' === $this->current_action() ) {
 
 			// In our file that handles the request, verify the nonce.
 			$nonce = esc_attr( $_REQUEST['_wpnonce'] );
-
 			if ( ! wp_verify_nonce( $nonce, 'sp_delete_message' ) ) {
 				die( 'Go get a life script kiddies' );
 			}
 			else {
-				self::delete_customer( absint( $_GET['message'] ) );
+				print_r($_GET['message']);
+				
+    echo '<pre>';
+    print_r($_REQUEST);
+    print_r($_GET);
+	print_r(absint($_GET['message']));
+    echo '</pre>';
+				self::delete_message( absint( $_GET['message'] ) );
 
 		        // esc_url_raw() is used to prevent converting ampersand in url to "#038;"
 		        // add_query_arg() return the current url
