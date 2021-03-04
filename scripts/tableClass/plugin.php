@@ -286,6 +286,9 @@ class WGA_Message_List extends WP_List_Table {
 }
 
 
+//
+// Instantiated by / near add_submenu_page('Campaign') through get_instance()
+//
 class WGA_Plugin {
 
 	// class instance
@@ -296,6 +299,7 @@ class WGA_Plugin {
 
 	// class constructor
 	public function __construct() {
+		//$this->messages_obj = new WGA_Message_List();
 		add_filter( 'set-screen-option', [ __CLASS__, 'set_screen' ], 10, 3 );
 		//add_action( 'admin_menu', [ $this, 'plugin_menu' ] );
 	}
@@ -327,6 +331,13 @@ class WGA_Plugin {
     <form action='<?php admin_url( 'admin-post.php' ); ?>'' method="post">
 	 */
 	public function wga_plugin_settings_page() {
+        echo '<style type="text/css">';
+        echo '.wp-list-table .column-id { width: 6em; }';
+        echo '.wp-list-table .column-subject { width: 20em; }';
+        echo '.wp-list-table .column-content { width: 50em; }';
+        echo '.wp-list-table .column-created_at { width: 10em; }';
+        echo '.wp-list-table .column-updated_at { width: 10em; }';
+        echo '</style>';
 		?>
 		<div class="wrap">
 			<div id="poststuff">
@@ -379,7 +390,7 @@ class WGA_Plugin {
 }
 
 
-add_action( 'plugins_loaded', function () {
-    WGA_Plugin::get_instance();
+//add_action( 'plugins_loaded', function () {
+    //WGA_Plugin::get_instance();
     //add_action( 'admin_post_apply_bulk_action', 'process_bulk_action' );
-} );
+//} );
