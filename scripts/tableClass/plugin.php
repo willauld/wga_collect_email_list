@@ -142,11 +142,13 @@ class WGA_Message_List extends WP_List_Table {
 	 */
 	function column_id( $item ) {
 
+		$edit_nonce = wp_create_nonce( 'sp_edit_message' );
 		$delete_nonce = wp_create_nonce( 'sp_delete_message' );
 
 		$title = '<strong>' . $item['message_id'] . '</strong>';
 
 		$actions = [
+            'edit' => sprintf( '<a href="?page=%s&action=%s&message=%s&_wpnonce=%s">Edit</a>', esc_attr( $_REQUEST['page'] ), 'edit', absint( $item['message_id'] ), $edit_nonce ),
 			'delete' => sprintf( '<a href="?page=%s&action=%s&message=%s&_wpnonce=%s">Delete</a>', esc_attr( $_REQUEST['page'] ), 'delete', absint( $item['message_id'] ), $delete_nonce )
 		];
 
@@ -230,21 +232,23 @@ class WGA_Message_List extends WP_List_Table {
 
 	public function process_bulk_action() {
 		//Detect when a bulk action is being triggered...
-		if ( 'delete' === $this->current_action() ) {
+				
+    echo '<pre>';
+    print_r($_REQUEST);
+    print_r($_GET);
+	//print_r(absint($_GET['message']));
+    echo '</pre>';
 
+		if ( 'edit' === $this->current_action() ) {
+			// In our file that handles the request, verify the nonce.
+            // This operation is handled by on-page php code.
+        }elseif ( 'delete' === $this->current_action() ) {
 			// In our file that handles the request, verify the nonce.
 			$nonce = esc_attr( $_REQUEST['_wpnonce'] );
 			if ( ! wp_verify_nonce( $nonce, 'sp_delete_message' ) ) {
 				die( 'Go get a life script kiddies' );
 			}
 			else {
-				print_r($_GET['message']);
-				
-    echo '<pre>';
-    print_r($_REQUEST);
-    print_r($_GET);
-	print_r(absint($_GET['message']));
-    echo '</pre>';
 				self::delete_message( absint( $_GET['message'] ) );
 
 		        // esc_url_raw() is used to prevent converting ampersand in url to "#038;"
@@ -282,7 +286,6 @@ class WGA_Message_List extends WP_List_Table {
 			//exit;
 		}
 	}
-
 }
 
 

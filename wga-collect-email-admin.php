@@ -717,6 +717,24 @@ function wga_admin_campaign() {
 	WGA_Plugin::get_instance()->wga_plugin_settings_page();
 
 
+    if (!empty($_GET['message']) && (!empty($_GET['action']) && $_GET['action']=='edit')) {
+        // message list table normally would process 'edit' and its nonce 
+        // but to edit on this page we do it here
+		$nonce = esc_attr( $_REQUEST['_wpnonce'] );
+		if ( ! wp_verify_nonce( $nonce, 'sp_edit_message' ) ) {
+			die( 'Go get a life script kiddies' );
+		}
+		else {
+            $edit_id = absint($_GET['message']);
+            $m_record = wga_fetch_message($edit_id); 
+            if ($m_record) {
+                $editor_content = $m_record->message_content;
+                $editor_subject = $m_record->message_subject;
+                $m_id = $edit_id;
+                $edit_id = -1;
+            }
+        }
+    }
     // 
     // message editing section below
     //
@@ -747,7 +765,6 @@ function wga_admin_campaign() {
 	    'textarea_rows' => 15,
 	);
     echo '<pre>';
-	//var_dump(); 
     print_r($_REQUEST);
     //print_r($_POST);
     echo '</pre>';
