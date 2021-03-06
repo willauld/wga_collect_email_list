@@ -99,7 +99,7 @@ function wga_plugin_setup_menu(){
 		$message_page_hook = add_submenu_page(basename(__FILE__), 'Messages', 'Messages',  'manage_options', 'Messages', 'wga_admin_messages');
 
 		//add_action( "load-$message_page_hook", [ $this, 'screen_option' ] );
-		add_action( "load-$message_page_hook", [ WGA_Plugin::get_instance(), 'screen_option' ] );
+		add_action( "load-$message_page_hook", [ WGA_Messages::get_instance(), 'screen_option' ] );
 	}
 }
 
