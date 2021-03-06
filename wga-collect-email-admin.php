@@ -711,6 +711,18 @@ function wga_admin_campaign() {
     }
 
     echo '<h1> Campaign page </h1>';
+    // 
+    // edit new message
+    //
+    echo '<form method="post">';
+    echo '<div >';
+    echo '<div style="display: inline-block"> ';
+    echo '<input name="wga_edit_id" id="m_id" type="hidden" value="-1">';
+	submit_button( 'Edit new message' );
+    echo '</div>';
+    echo '</div>';
+    echo '</form>';
+
     //
     // message list table display
     //
@@ -738,24 +750,6 @@ function wga_admin_campaign() {
     // 
     // message editing section below
     //
-    echo '<form method="post">';
-    echo '<div >';
-    echo '<div style="display: inline-block; padding:20;">' ;
-    echo '<h2> Messages </h2>';
-    echo '</div>';
-    echo '<b>&nbsp;<b/>';
-    echo '<div style="display: inline-block"> ';
-    //echo '<input type="hidden" name="wga_message_id" value="'.$m_id.'">';
-    echo '<label for="m_id" ><h2>Message ID:</h2></label>';
-    echo '<input name="wga_edit_id" id="m_id" type="text" size="6" value="'.$edit_id.'">';
-    echo '</div>';
-    echo '<div style="display: inline-block"> ';
-	submit_button( 'Add new' );
-    echo '</div>';
-    echo '</div>';
-    echo '</form>';
-
-
 	$subject_args = array(
 	    'textarea_rows' => 1,
 	    'teeny' => true,
@@ -764,17 +758,29 @@ function wga_admin_campaign() {
 	$letter_args = array(
 	    'textarea_rows' => 15,
 	);
-    echo '<pre>';
-    print_r($_REQUEST);
-    //print_r($_POST);
-    echo '</pre>';
 
     echo '<form method="post">';
     if ($ErrStr != '') {
         echo 'Error: '.$ErrStr;
     }
-    echo '<h2>Current Message id: '.$m_id.'</h2>';
+    if ($m_id > 0) {
+        echo '<div style="width:50%;" >';
+        echo '<div style="display: inline-block"> ';
+        echo '<h2>Currently editing message id: '.$m_id.'  </h2>';
+        echo '</div>';
+        echo '<div style="display: inline-block; float: right;"> ';
+        echo '<form method="post">';
+        echo '<input name="wga_edit_id" id="m_id" type="hidden" value="-1">';
+	    submit_button( 'Edit new message' );
+        echo '</form>';
+        echo '</div>';
+        echo '</div>';
+    }else {
+        echo '<h2>Currently editing new message</h2>';
+    }
+
     echo '<div style="width:95%;">';
+    echo '<form method="post">';
     echo '<input type="hidden" name="wga_message_id" value="'.$m_id.'">';
     echo '<input type="hidden" name="wga_message_saved" value="'.$m_id.'">';
     echo '<label for="subject" ><h2>Letter Subject:</h2></label>';
