@@ -23,6 +23,8 @@ function wga_delete_db_table() {
 	//echo 'table name is: ' . $table_name .PHP_EOL;
 	$sql = "DROP TABLE IF EXISTS " . $table_name;
 	$wpdb->query($sql);
+    // message table...
+    // other table...
 	
 	
 }

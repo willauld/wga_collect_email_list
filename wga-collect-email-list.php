@@ -124,6 +124,7 @@ function wga_db_table_install() {
 		created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
 		updated_at datetime,
 		is_verified tinyint(1) DEFAULT 0,
+		is_spam tinyint(1) DEFAULT 0,
         vhash varchar(32) NOT NULL,
 		UNIQUE KEY id (id),
 		UNIQUE KEY email (email)
