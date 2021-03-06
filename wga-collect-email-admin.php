@@ -636,7 +636,7 @@ function wga_send_initial_email($email_id) {
 	return $email_response;
 }
 
-function wga_admin_campaign() {
+function wga_admin_messages() {
     $m_id = -1;
     $m_saved = 0;
     $edit_id = -1;
@@ -710,7 +710,7 @@ function wga_admin_campaign() {
         }
     }
 
-    echo '<h1> Campaign page </h1>';
+    echo '<h1> Message page </h1>';
     // 
     // edit new message
     //

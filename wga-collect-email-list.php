@@ -96,10 +96,10 @@ function wga_plugin_setup_menu(){
 	if(function_exists('add_submenu_page')){
 		add_submenu_page(basename(__FILE__), 'Options', 'Options', 'manage_options', basename(__FILE__), 'wga_admin_options');
 		add_submenu_page(basename(__FILE__), 'Manage', 'Manage',  'manage_options', 'Management', 'wga_admin_manage');
-		$campaign_page_hook = add_submenu_page(basename(__FILE__), 'Campaign', 'Campaign',  'manage_options', 'Campaign', 'wga_admin_campaign');
+		$message_page_hook = add_submenu_page(basename(__FILE__), 'Messages', 'Messages',  'manage_options', 'Messages', 'wga_admin_messages');
 
-		//add_action( "load-$campaign_page_hook", [ $this, 'screen_option' ] );
-		add_action( "load-$campaign_page_hook", [ WGA_Plugin::get_instance(), 'screen_option' ] );
+		//add_action( "load-$message_page_hook", [ $this, 'screen_option' ] );
+		add_action( "load-$message_page_hook", [ WGA_Plugin::get_instance(), 'screen_option' ] );
 	}
 }
 

@@ -22,7 +22,7 @@ class WGA_Message_List extends WP_List_Table {
 			'singular' => __( 'Message', 'sp' ), //singular name of the listed records
 			'plural'   => __( 'Messages', 'sp' ), //plural name of the listed records
 			'ajax'     => false, //does this table support ajax?
-			'screen'   => 'Campaign'
+			'screen'   => 'Messages'
 		] );
 
 	}
@@ -253,7 +253,7 @@ class WGA_Message_List extends WP_List_Table {
 
 		        // esc_url_raw() is used to prevent converting ampersand in url to "#038;"
 		        // add_query_arg() return the current url
-		    	//wp_redirect( 'http://wp2.test/wp-admin/admin.php?page=Campaign' );
+		    	//wp_redirect( 'http://wp2.test/wp-admin/admin.php?page=Messages' );
 		        //wp_redirect( esc_url_raw(add_query_arg()) );
 				//echo 'Ob_get_level(): '.ob_get_level();
 				//echo 'ob_get_content():: '.ob_get_contents();
@@ -279,7 +279,7 @@ class WGA_Message_List extends WP_List_Table {
 			// esc_url_raw() is used to prevent converting ampersand in url to "#038;"
 		    // add_query_arg() return the current url
 		    //wp_redirect( esc_url_raw(add_query_arg()) );
-		    //wp_redirect( 'http://wp2.test/wp-admin/admin.php?page=Campaign' );
+		    //wp_redirect( 'http://wp2.test/wp-admin/admin.php?page=Messages' );
 				//echo 'Ob_get_level(): '.ob_get_level();
 				//echo 'ob_get_content():: '.ob_get_contents();
 	        //wp_redirect( $_POST["current_url"] );
@@ -290,7 +290,7 @@ class WGA_Message_List extends WP_List_Table {
 
 
 //
-// Instantiated by / near add_submenu_page('Campaign') through get_instance()
+// Instantiated by / near add_submenu_page('Messages') through get_instance()
 //
 class WGA_Plugin {
 
