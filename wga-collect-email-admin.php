@@ -726,7 +726,7 @@ function wga_admin_messages() {
     //
     // message list table display
     //
-	WGA_Plugin::get_instance()->wga_plugin_settings_page();
+	WGA_Messages::get_instance()->wga_plugin_settings_page();
 
 
     if (!empty($_GET['message']) && (!empty($_GET['action']) && $_GET['action']=='edit')) {

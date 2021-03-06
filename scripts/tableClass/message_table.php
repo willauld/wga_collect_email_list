@@ -292,7 +292,7 @@ class WGA_Message_List extends WP_List_Table {
 //
 // Instantiated by / near add_submenu_page('Messages') through get_instance()
 //
-class WGA_Plugin {
+class WGA_Messages {
 
 	// class instance
 	static $instance;

@@ -84,7 +84,7 @@ function wga_collect_email_list_activation() {
 // Add admin functionality
 //
 
-require_once(dirname(__FILE__).'/scripts/tableClass/plugin.php'); 
+require_once(dirname(__FILE__).'/scripts/tableClass/message_table.php'); 
 require_once('wga-collect-email-admin.php'); 
 
 add_action('admin_menu', 'wga_plugin_setup_menu');
