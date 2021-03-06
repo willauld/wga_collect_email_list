@@ -1,12 +1,11 @@
 <?php
 
 /*
-Plugin Name: WP_List_Table Class Example
+WGA_Message_list dirived from WP_List_Table Class
 Plugin URI: https://www.sitepoint.com/using-wp_list_table-to-create-wordpress-admin-tables/
-Description: Demo on how WP_List_Table Class works
+Description: Based on Demo on how WP_List_Table Class works
 Version: 1.0
-Author: Collins Agbonghama
-Author URI:  https://w3guy.com
+Author: Will Auld
 */
 
 if ( ! class_exists( 'WP_List_Table' ) ) {
@@ -228,19 +227,18 @@ class WGA_Message_List extends WP_List_Table {
 		$this->items = self::get_messages( $per_page, $current_page );
 	}
 
-   //&&&& add_action( 'admin_post_apply_bulk_action', 'process_bulk_action' );&&&& FIXME trying at construction of WGA_Plugin();
-
 	public function process_bulk_action() {
 		//Detect when a bulk action is being triggered...
 				
-    echo '<pre>';
-    print_r($_REQUEST);
-    print_r($_GET);
-	//print_r(absint($_GET['message']));
-    echo '</pre>';
+        /*
+        echo '<pre>';
+        print_r($_REQUEST);
+        print_r($_GET);
+	    //print_r(absint($_GET['message']));
+        echo '</pre>';
+        */
 
 		if ( 'edit' === $this->current_action() ) {
-			// In our file that handles the request, verify the nonce.
             // This operation is handled by on-page php code.
         }elseif ( 'delete' === $this->current_action() ) {
 			// In our file that handles the request, verify the nonce.
@@ -250,15 +248,6 @@ class WGA_Message_List extends WP_List_Table {
 			}
 			else {
 				self::delete_message( absint( $_GET['message'] ) );
-
-		        // esc_url_raw() is used to prevent converting ampersand in url to "#038;"
-		        // add_query_arg() return the current url
-		    	//wp_redirect( 'http://wp2.test/wp-admin/admin.php?page=Messages' );
-		        //wp_redirect( esc_url_raw(add_query_arg()) );
-				//echo 'Ob_get_level(): '.ob_get_level();
-				//echo 'ob_get_content():: '.ob_get_contents();
-	            //wp_redirect( $_POST["current_url"] );
-				//exit;
 			}
 
 		}
@@ -275,15 +264,6 @@ class WGA_Message_List extends WP_List_Table {
 				self::delete_message( $id );
 
 			}
-
-			// esc_url_raw() is used to prevent converting ampersand in url to "#038;"
-		    // add_query_arg() return the current url
-		    //wp_redirect( esc_url_raw(add_query_arg()) );
-		    //wp_redirect( 'http://wp2.test/wp-admin/admin.php?page=Messages' );
-				//echo 'Ob_get_level(): '.ob_get_level();
-				//echo 'ob_get_content():: '.ob_get_contents();
-	        //wp_redirect( $_POST["current_url"] );
-			//exit;
 		}
 	}
 }
@@ -302,7 +282,6 @@ class WGA_Messages {
 
 	// class constructor
 	public function __construct() {
-		//$this->messages_obj = new WGA_Message_List();
 		add_filter( 'set-screen-option', [ __CLASS__, 'set_screen' ], 10, 3 );
 		//add_action( 'admin_menu', [ $this, 'plugin_menu' ] );
 	}
@@ -331,7 +310,6 @@ class WGA_Messages {
 
 	/**
 	 * Plugin settings page
-    <form action='<?php admin_url( 'admin-post.php' ); ?>'' method="post">
 	 */
 	public function wga_plugin_settings_page() {
         echo '<style type="text/css">';
@@ -391,9 +369,3 @@ class WGA_Messages {
 	}
 
 }
-
-
-//add_action( 'plugins_loaded', function () {
-    //WGA_Plugin::get_instance();
-    //add_action( 'admin_post_apply_bulk_action', 'process_bulk_action' );
-//} );
