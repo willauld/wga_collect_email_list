@@ -180,7 +180,7 @@ function csv_submission_processor() {
         */
 
         wga_update_table_from_csvfile($upload['file']);
-        // FIXME unlink file here?
+        // File is unlink'd at end of above function
 
 	    wp_redirect( $_POST["current_url"] );
 	    die();
