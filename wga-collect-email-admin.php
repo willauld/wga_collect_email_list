@@ -342,61 +342,17 @@ function wga_admin_manage() {
     //
     // message list table display
     //
-	WGA_Manage_Email::get_instance()->wga_plugin_settings_page();
-
-
-    if (!empty($_GET['message']) && (!empty($_GET['action']) && $_GET['action']=='edit')) {
-        // message list table normally would process 'edit' and its nonce 
-        // but to edit on this page we do it here
-		$nonce = esc_attr( $_REQUEST['_wpnonce'] );
-		if ( ! wp_verify_nonce( $nonce, 'sp_edit_email_record' ) ) {
-			die( 'Go get a life script kiddies' );
-		}
-		else {
-            $edit_id = absint($_GET['email_record']);
-            $m_record = wga_fetch_message($edit_id); 
-            if ($m_record) {
-                $editor_content = $m_record->message_content;
-                $editor_subject = $m_record->message_subject;
-                $m_id = $edit_id;
-                $edit_id = -1;
-            }
-        }
-    }
-
-    //
-    // home grown message list table display
-    //
     echo '<h2> WGA Collect Email List Manage Page </h2>';
-    echo '<!-- Add icon library -->';
-    echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">';
+
     echo '<style>';
-    echo 'div.ex3 {';
-    //echo '  background-color: lightblue;';
-    echo '  height: 350px;';
-    echo '  overflow: auto;';
-    echo '}';
-
-    echo 'table {';
-    echo '  border-collapse: collapse;';
-    echo '  border-spacing: 0;';
-    echo '  width: 95%;';
-    echo '  border: 1px solid #ddd;';
-    echo '}';
-
-    echo 'th, td {';
-    echo '  text-align: left;';
-    echo '  padding: 8px;';
-    echo '}';
     echo 'tr:nth-child(even){background-color: lightblue}';
-
     /* Darker background on mouse-over */
     echo '.button button-primary:hover {';
     //echo '  background-color: RoyalBlue;';
     echo '  background-color: lightblue;';
     echo '}';
     echo '</style>';
-    //echo '<hr>';
+
     echo '<p><h3>Table contains '.count($list).' records, '.$count_array['active'].' active, '.$count_array['unverified'].' unverified, '.$count_array['unsubscribed'].' unsubscribed </h3></p>';
 
     //
@@ -442,56 +398,30 @@ function wga_admin_manage() {
 	echo '</div>';//radio & download container
 
     echo '<br>';
+    //
+    // email list table display
+    //
+	WGA_Manage_Email::get_instance()->wga_plugin_settings_page();
 
-    echo '<div class="ex3" style="overflow-x:auto; width:95%">';
-    echo '<table style="width:95%">';
-    echo '  <tr>';
-    echo '      <th>ID</th>';
-    echo '      <th>First Name</th>';
-    echo '      <th>Last Name</th>';
-    echo '      <th>Email</th>';
-    echo '      <th>Source</th>';
-    echo '      <th>Unsubscribed</th>';
-    echo '      <th>Created_at</th>';
-    echo '      <th>Updated_at</th>';
-    echo '      <th>Is Verified?</th>';
-    echo '      <th>Hash</th>';
-    echo '  </tr>';
 
-	foreach ($list as $record) {
-        $dorecord = 0;
-        if ($filterrecords == "all") {
-            $dorecord = 1;
-        } elseif ($filterrecords == "active") {
-	        if (($record["is_verified"] == 1) && ($record["unsubscribed"] == 0)){
-                $dorecord = 1;
-            } 
-        } elseif ($filterrecords == "unverified") {
-	        if ($record["is_verified"] == 0) {
-                $dorecord = 1;
+    if (!empty($_GET['message']) && (!empty($_GET['action']) && $_GET['action']=='edit')) {
+        // message list table normally would process 'edit' and its nonce 
+        // but to edit on this page we do it here
+		$nonce = esc_attr( $_REQUEST['_wpnonce'] );
+		if ( ! wp_verify_nonce( $nonce, 'sp_edit_email_record' ) ) {
+			die( 'Go get a life script kiddies' );
+		}
+		else {
+            $edit_id = absint($_GET['email_record']);
+            $m_record = wga_fetch_message($edit_id); 
+            if ($m_record) {
+                $editor_content = $m_record->message_content;
+                $editor_subject = $m_record->message_subject;
+                $m_id = $edit_id;
+                $edit_id = -1;
             }
-        } elseif ($filterrecords == "unsubscribed") {
-	        if ($record["unsubscribed"] == 1) {
-                $dorecord = 1;
-            }
-        }
-        if ($dorecord == 1) {
-	        echo '<tr>';
-	        echo '  <td>'.$record["id"].'</td>';
-	        echo '  <td>'.$record["first_name"].'</td>';
-	        echo '  <td>'.$record["last_name"].'</td>';
-	        echo '  <td>'.$record["email"].'</td>';
-	        echo '  <td>'.$record["source"].'</td>';
-	        echo '  <td>'.$record["unsubscribed"].'</td>';
-	        echo '  <td>'.$record["created_at"].'</td>';
-	        echo '  <td>'.$record["updated_at"].'</td>';
-	        echo '  <td>'.$record["is_verified"].'</td>';
-	        echo '  <td>'.$record["vhash"].'</td>';
-	        echo '</tr>';
         }
     }
-    echo '</table>';
-	echo '</div>'; //table container
 
     //
     // upload form

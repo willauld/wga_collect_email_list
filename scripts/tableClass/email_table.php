@@ -231,7 +231,9 @@ class WGA_Email_List extends WP_List_Table {
 	public function get_bulk_actions() {
 		$actions = [
 			'bulk-delete' => 'Delete',
-			'bulk-resend-verify' => 'Resend Verify'
+			'bulk-spam' => 'SPAM',
+			'bulk-unsubscribe' => 'Unsubscribe',
+			'bulk-resend-verify' => 'Resend Verify',
 		];
 
 		return $actions;
