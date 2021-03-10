@@ -12,34 +12,43 @@ if ( ! class_exists( 'WP_List_Table' ) ) {
 	require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 }
 
-class WGA_Message_List extends WP_List_Table {
+class WGA_Email_List extends WP_List_Table {
 
 	/** Class constructor */
 	public function __construct() {
 
 		parent::__construct( [
-			'singular' => __( 'Message', 'sp' ), //singular name of the listed records
-			'plural'   => __( 'Messages', 'sp' ), //plural name of the listed records
+			'singular' => __( 'Email', 'sp' ), //singular name of the listed records
+			'plural'   => __( 'Emails', 'sp' ), //plural name of the listed records
 			'ajax'     => false, //does this table support ajax?
-			'screen'   => 'Messages'
+			//'screen'   => 'Messages'
 		] );
 
 	}
-
+    protected function get_views() { 
+        $status_links = array(
+            "All"       => __("<a href='#'>All</a>",'my-plugin-slug'),
+            "Active" => __("<a href='#'>Active</a>",'my-plugin-slug'),
+            "Unverified"   => __("<a href='#'>Unverified</a>",'my-plugin-slug'),
+            "Unsubscribed"   => __("<a href='#'>Unsubscribed</a>",'my-plugin-slug'),
+            "SPAM"   => __("<a href='#'>SPAM</a>",'my-plugin-slug'),
+        );
+        return $status_links;
+    }
 
 	/**
-	 * Retrieve customers data from the database
+	 * Retrieve email data from the database
 	 *
 	 * @param int $per_page
 	 * @param int $page_number
 	 *
 	 * @return mixed
 	 */
-	public static function get_messages( $per_page = 5, $page_number = 1 ) {
+	public static function get_email_list( $per_page = 5, $page_number = 1 ) {
 
 		global $wpdb;
 
-		$sql = "SELECT * FROM {$wpdb->prefix}wga_message_list";
+		$sql = "SELECT * FROM {$wpdb->prefix}wga_contact_list";
 
 		if ( ! empty( $_REQUEST['orderby'] ) ) {
 			$sql .= ' ORDER BY ' . esc_sql( $_REQUEST['orderby'] );
@@ -57,15 +66,15 @@ class WGA_Message_List extends WP_List_Table {
 
 
 	/**
-	 * Delete a customer record.
+	 * Delete an email record.
 	 *
 	 * @param int $id customer ID
 	 */
-	public static function delete_message( $id ) {
+	public static function delete_email_record( $id ) {
 		global $wpdb;
 
 		$wpdb->delete(
-			"{$wpdb->prefix}wga_message_list",
+			"{$wpdb->prefix}wga_contact_list",
 			[ 'message_id' => $id ],
 			[ '%d' ]
 		);
@@ -80,15 +89,15 @@ class WGA_Message_List extends WP_List_Table {
 	public static function record_count() {
 		global $wpdb;
 
-		$sql = "SELECT COUNT(*) FROM {$wpdb->prefix}wga_message_list";
+		$sql = "SELECT COUNT(*) FROM {$wpdb->prefix}wga_contact_list";
 
 		return $wpdb->get_var( $sql );
 	}
 
 
-	/** Text displayed when no customer data is available */
+	/** Text displayed when no data is available */
 	public function no_items() {
-		_e( 'No messages avaliable.', 'sp' );
+		_e( 'No email records avaliable.', 'sp' );
 	}
 
 
@@ -103,16 +112,28 @@ class WGA_Message_List extends WP_List_Table {
 	public function column_default( $item, $column_name ) {
 		switch ( $column_name ) {
 			case 'id':
-				return $item[ 'message_id' ];
-			case 'Subject':
-				return $item[ 'message_subject' ];
-			case 'Content':
-				return $item[ 'message_content' ];
+				return $item[ 'id' ];
+			case 'First Name':
+				return $item[ 'first_name' ];
+			case 'Last Name':
+				return $item[ 'last_name' ];
+			case 'Email':
+				return $item[ 'email' ];
+			case 'Source':
+				return $item[ 'source' ];
+            case 'Unsubscribed':
+				return $item[ 'unsubscribed' ];
 			case 'Created_at':
-				return $item[ 'message_created_at' ];
+				return $item[ 'created_at' ];
 			case 'Updated_at':
-				return $item[ 'message_updated_at' ];
+				return $item[ 'updated_at' ];
 				//return $item[ 'message_'.$column_name ];
+			case 'Is Verified?':
+				return $item[ 'is_verified' ];
+			case 'Is SPAM?':
+				return $item[ 'is_spam' ];
+			case 'Hash':
+				return $item[ 'vhash' ];
 			default:
 				return print_r( $item, true ); //Show the whole array for troubleshooting purposes
 		}
@@ -127,7 +148,7 @@ class WGA_Message_List extends WP_List_Table {
 	 */
 	function column_cb( $item ) {
 		return sprintf(
-			'<input type="checkbox" name="bulk-delete[]" value="%s" />', $item['message_id']
+			'<input type="checkbox" name="bulk-delete[]" value="%s" />', $item['id']
 		);
 	}
 
@@ -141,14 +162,14 @@ class WGA_Message_List extends WP_List_Table {
 	 */
 	function column_id( $item ) {
 
-		$edit_nonce = wp_create_nonce( 'sp_edit_message' );
-		$delete_nonce = wp_create_nonce( 'sp_delete_message' );
+		$edit_nonce = wp_create_nonce( 'sp_edit_email_record' );
+		$delete_nonce = wp_create_nonce( 'sp_delete_email_record' );
 
-		$title = '<strong>' . $item['message_id'] . '</strong>';
+		$title = '<strong>' . $item['id'] . '</strong>';
 
 		$actions = [
-            'edit' => sprintf( '<a href="?page=%s&action=%s&message=%s&_wpnonce=%s">Edit</a>', esc_attr( $_REQUEST['page'] ), 'edit', absint( $item['message_id'] ), $edit_nonce ),
-			'delete' => sprintf( '<a href="?page=%s&action=%s&message=%s&_wpnonce=%s">Delete</a>', esc_attr( $_REQUEST['page'] ), 'delete', absint( $item['message_id'] ), $delete_nonce )
+            'edit' => sprintf( '<a href="?page=%s&action=%s&email_record=%s&_wpnonce=%s">Edit</a>', esc_attr( $_REQUEST['page'] ), 'edit', absint( $item['id'] ), $edit_nonce ),
+			'delete' => sprintf( '<a href="?page=%s&action=%s&email_record=%s&_wpnonce=%s">Delete</a>', esc_attr( $_REQUEST['page'] ), 'delete', absint( $item['id'] ), $delete_nonce )
 		];
 
 		return $title . $this->row_actions( $actions );
@@ -164,10 +185,16 @@ class WGA_Message_List extends WP_List_Table {
 		$columns = [
 			'cb'      => '<input type="checkbox" />',
 			'id'    => __( 'id', 'sp' ),
-			'Subject'    => __( 'Subject', 'sp' ),
-			'Content' => __( 'Content', 'sp' ),
+			'First Name'    => __( 'First Name', 'sp' ),
+			'Last Name' => __( 'Last Name', 'sp' ),
+			'Email' => __( 'Email', 'sp' ),
+			'Source' => __( 'Source', 'sp' ),
+			'Unsubscribed' => __( 'Unsubscribed', 'sp' ),
+			'Is Verified?'    => __( 'Is Verified?', 'sp' ),
+			'Is SPAM?'    => __( 'Is SPAM?', 'sp' ),
 			'Created_at'    => __( 'Created_at', 'sp' ),
-			'Updated_at'    => __( 'Updated_at', 'sp' )
+			'Updated_at'    => __( 'Updated_at', 'sp' ),
+			'Hash'    => __( 'Hash', 'sp' ),
 		];
 
 		return $columns;
@@ -181,11 +208,16 @@ class WGA_Message_List extends WP_List_Table {
 	 */
 	public function get_sortable_columns() {
 		$sortable_columns = array(
-			'id' => array( 'message_id', true ),
-			'Subject' => array( 'message_subject', true ),
-			//'Content' => array( 'message_content', false ),
-			'Created_at' => array( 'message_created_at', true ),
-			'Updated_at' => array( 'message_updated_at', true )
+			'id' => array( 'id', true ),
+			'First Name' => array( 'first_name', true ),
+			'Last Name' => array( 'last_name', true ),
+			'Email' => array( 'email', false ),
+			'Source' => array( 'source', false ),
+			'Unsubscribed' => array( 'unsubscribed', false ),
+			'Created_at' => array( 'created_at', true ),
+			'Updated_at' => array( 'updated_at', true ),
+			'Is Verified?' => array( 'is_verified', true ),
+			'Is SPAM?' => array( 'is_spam', true ),
 		);
 
 		return $sortable_columns;
@@ -198,7 +230,8 @@ class WGA_Message_List extends WP_List_Table {
 	 */
 	public function get_bulk_actions() {
 		$actions = [
-			'bulk-delete' => 'Delete'
+			'bulk-delete' => 'Delete',
+			'bulk-resend-verify' => 'Resend Verify'
 		];
 
 		return $actions;
@@ -215,7 +248,7 @@ class WGA_Message_List extends WP_List_Table {
 		/** Process bulk action */
 		$this->process_bulk_action();
 
-		$per_page     = $this->get_items_per_page( 'messages_per_page', 5 );
+		$per_page     = $this->get_items_per_page( 'records_per_page', 5 );
 		$current_page = $this->get_pagenum();
 		$total_items  = self::record_count();
 
@@ -224,7 +257,7 @@ class WGA_Message_List extends WP_List_Table {
 			'per_page'    => $per_page //WE have to determine how many items to show on a page
 		] );
 
-		$this->items = self::get_messages( $per_page, $current_page );
+		$this->items = self::get_email_list( $per_page, $current_page );
 	}
 
 	public function process_bulk_action() {
@@ -247,7 +280,7 @@ class WGA_Message_List extends WP_List_Table {
 				die( 'Go get a life script kiddies' );
 			}
 			else {
-				self::delete_message( absint( $_GET['message'] ) );
+				self::delete_message( absint( $_GET['message???'] ) );
 			}
 
 		}
@@ -270,15 +303,15 @@ class WGA_Message_List extends WP_List_Table {
 
 
 //
-// Instantiated by / near add_submenu_page('Messages') through get_instance()
+// Instantiated by / near add_submenu_page('Manage') through get_instance()
 //
-class WGA_Messages {
+class WGA_Manage_Email {
 
 	// class instance
 	static $instance;
 
 	// customer WP_List_Table object
-	public $messages_obj;
+	public $email_list_obj;
 
 	// class constructor
 	public function __construct() {
@@ -314,10 +347,15 @@ class WGA_Messages {
 	public function wga_plugin_settings_page() {
         echo '<style type="text/css">';
         echo '.wp-list-table .column-id { width: 6em; }';
-        echo '.wp-list-table .column-subject { width: 20em; }';
-        echo '.wp-list-table .column-content { width: 50em; }';
-        echo '.wp-list-table .column-created_at { width: 10em; }';
-        echo '.wp-list-table .column-updated_at { width: 10em; }';
+        echo '.wp-list-table .column-First { width: 10em; }';
+        echo '.wp-list-table .column-Last { width: 10em; }';
+        echo '.wp-list-table .column-Email { width: 10em; }';
+        echo '.wp-list-table .column-Source { width: 10em; }';
+        echo '.wp-list-table .column-Unsubscribed { width: 7em; }';
+        echo '.wp-list-table .column-Is { width: 6em; }';
+        echo '.wp-list-table .column-Created_at { width: 7em; }';
+        echo '.wp-list-table .column-Updated_at { width: 7em; }';
+        echo '.wp-list-table .column-Hash { width: 5em; }';
         echo '</style>';
 		?>
 		<div class="wrap">
@@ -330,6 +368,7 @@ class WGA_Messages {
 		                        <input type='hidden' name='current_url' value='<?php echo $current_url ?>' >
 								<?php
 								$this->messages_obj->prepare_items();
+								$this->messages_obj->get_views();
 								$this->messages_obj->display(); ?>
 							</form>
 						</div>
@@ -348,14 +387,14 @@ class WGA_Messages {
 
 		$option = 'per_page';
 		$args   = [
-			'label'   => 'Messages',
+			'label'   => 'Email Records',
 			'default' => 5,
 			'option'  => 'messages_per_page'
 		];
 
 		add_screen_option( $option, $args );
 
-		$this->messages_obj = new WGA_Message_List();
+		$this->messages_obj = new WGA_Email_List();
 	}
 
 

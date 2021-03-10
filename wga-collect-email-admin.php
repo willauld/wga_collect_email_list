@@ -189,13 +189,15 @@ function csv_submission_processor() {
 
 function wga_update_table_from_csvfile($file) {
     //
-    // csv file format based on csv download format. The file contains a title row
-    // followed by the data rows. Each row starts with an id field. If the row 
-    // represents a new record the id field should be blank. The last field is blank
-    // on download but can be set to '1' in the case the row has been modified and is
-    // intended to update the datebase record with the same id field. Rows without this
-    // field set will be inserted into the table if the email field value is not already
-    // present in the table. If it is present the row will be ignored. 
+    // csv file format based on csv download format. The file contains a 
+    // title row followed by the data rows. Each row starts with an id 
+    // field. If the row represents a new record the id field should be 
+    // blank. The last field is blank on download but can be set to '1' in 
+    // the case the row has been modified and is intended to update the
+    // datebase record with the same id field. Rows without this field set 
+    // will be inserted into the table if the email field value is not 
+    // already present in the table. If it is present the row will be 
+    // ignored. 
     //
     $row = 1;
     if (($handle = fopen($file, "r")) !== FALSE) {
@@ -337,6 +339,34 @@ function wga_admin_manage() {
         }
     }
 
+    //
+    // message list table display
+    //
+	WGA_Manage_Email::get_instance()->wga_plugin_settings_page();
+
+
+    if (!empty($_GET['message']) && (!empty($_GET['action']) && $_GET['action']=='edit')) {
+        // message list table normally would process 'edit' and its nonce 
+        // but to edit on this page we do it here
+		$nonce = esc_attr( $_REQUEST['_wpnonce'] );
+		if ( ! wp_verify_nonce( $nonce, 'sp_edit_email_record' ) ) {
+			die( 'Go get a life script kiddies' );
+		}
+		else {
+            $edit_id = absint($_GET['email_record']);
+            $m_record = wga_fetch_message($edit_id); 
+            if ($m_record) {
+                $editor_content = $m_record->message_content;
+                $editor_subject = $m_record->message_subject;
+                $m_id = $edit_id;
+                $edit_id = -1;
+            }
+        }
+    }
+
+    //
+    // home grown message list table display
+    //
     echo '<h2> WGA Collect Email List Manage Page </h2>';
     echo '<!-- Add icon library -->';
     echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">';
