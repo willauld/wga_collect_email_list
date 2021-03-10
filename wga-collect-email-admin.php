@@ -759,15 +759,15 @@ function wga_admin_messages() {
 	WGA_Messages::get_instance()->wga_plugin_settings_page();
 
 
-    if (!empty($_GET['message']) && (!empty($_GET['action']) && $_GET['action']=='edit')) {
+    if (!empty($_GET['email_record']) && (!empty($_GET['action']) && $_GET['action']=='edit')) {
         // message list table normally would process 'edit' and its nonce 
         // but to edit on this page we do it here
 		$nonce = esc_attr( $_REQUEST['_wpnonce'] );
-		if ( ! wp_verify_nonce( $nonce, 'sp_edit_message' ) ) {
+		if ( ! wp_verify_nonce( $nonce, 'sp_edit_email_record' ) ) {
 			die( 'Go get a life script kiddies' );
 		}
 		else {
-            $edit_id = absint($_GET['message']);
+            $edit_id = absint($_GET['email_record']);
             $m_record = wga_fetch_message($edit_id); 
             if ($m_record) {
                 $editor_content = $m_record->message_content;

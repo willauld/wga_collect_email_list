@@ -314,10 +314,10 @@ class WGA_Messages {
 	public function wga_plugin_settings_page() {
         echo '<style type="text/css">';
         echo '.wp-list-table .column-id { width: 6em; }';
-        echo '.wp-list-table .column-subject { width: 20em; }';
-        echo '.wp-list-table .column-content { width: 50em; }';
-        echo '.wp-list-table .column-created_at { width: 10em; }';
-        echo '.wp-list-table .column-updated_at { width: 10em; }';
+        echo '.wp-list-table .column-Subject { width: 15em; }';
+        echo '.wp-list-table .column-Content { width: 30em; }';
+        echo '.wp-list-table .column-Created_at { width: 7em; }';
+        echo '.wp-list-table .column-Updated_at { width: 7em; }';
         echo '</style>';
 		?>
 		<div class="wrap">
@@ -327,10 +327,10 @@ class WGA_Messages {
 						<div class="meta-box-sortables ui-sortable">
                             <form method="post">
 		                        <input type='hidden' name='action' value='apply_bulk_action'>
-		                        <input type='hidden' name='current_url' value='<?php echo $current_url ?>' >
 								<?php
 								$this->messages_obj->prepare_items();
-								$this->messages_obj->display(); ?>
+								$this->messages_obj->display(); 
+								?>
 							</form>
 						</div>
 					</div>

@@ -75,7 +75,7 @@ class WGA_Email_List extends WP_List_Table {
 
 		$wpdb->delete(
 			"{$wpdb->prefix}wga_contact_list",
-			[ 'message_id' => $id ],
+			[ 'id' => $id ],
 			[ '%d' ]
 		);
 	}
@@ -267,7 +267,7 @@ class WGA_Email_List extends WP_List_Table {
         echo '<pre>';
         print_r($_REQUEST);
         print_r($_GET);
-	    //print_r(absint($_GET['message']));
+	    print_r($this->current_action());
         echo '</pre>';
         */
 
@@ -276,11 +276,12 @@ class WGA_Email_List extends WP_List_Table {
         }elseif ( 'delete' === $this->current_action() ) {
 			// In our file that handles the request, verify the nonce.
 			$nonce = esc_attr( $_REQUEST['_wpnonce'] );
-			if ( ! wp_verify_nonce( $nonce, 'sp_delete_message' ) ) {
+			if ( ! wp_verify_nonce( $nonce, 'sp_delete_email_record' ) ) {
 				die( 'Go get a life script kiddies' );
 			}
 			else {
-				self::delete_message( absint( $_GET['message???'] ) );
+				$email_record_id = absint( $_GET['email_record'] ) ;
+				self::delete_email_record( $email_record_id );
 			}
 
 		}
@@ -294,7 +295,7 @@ class WGA_Email_List extends WP_List_Table {
 
 			// loop over the array of record IDs and delete them
 			foreach ( $delete_ids as $id ) {
-				self::delete_message( $id );
+				self::delete_email_record( $id );
 
 			}
 		}
@@ -365,11 +366,11 @@ class WGA_Manage_Email {
 						<div class="meta-box-sortables ui-sortable">
                             <form method="post">
 		                        <input type='hidden' name='action' value='apply_bulk_action'>
-		                        <input type='hidden' name='current_url' value='<?php echo $current_url ?>' >
 								<?php
 								$this->messages_obj->prepare_items();
 								$this->messages_obj->get_views();
-								$this->messages_obj->display(); ?>
+								$this->messages_obj->display(); 
+								?>
 							</form>
 						</div>
 					</div>
