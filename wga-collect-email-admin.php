@@ -686,6 +686,9 @@ function wga_admin_messages() {
     //
     // message list table display
     //
+    echo '<style>';
+    echo 'tr:nth-child(even){background-color: lightblue}';
+    echo '</style>';
 	WGA_Messages::get_instance()->wga_plugin_settings_page();
 
 
