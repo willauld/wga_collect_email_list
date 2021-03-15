@@ -37,6 +37,44 @@ class WGA_Email_List extends WP_List_Table {
     }
 
 	/**
+	 * Display email edit form  
+	 *
+	 * @param object $record db row
+	 *
+	 * @return mixed
+	 */
+	public static function display_record_edit_form($record){
+        echo '<form method="POST">';
+        echo '<fieldset>';
+        echo '<legend>Email Record id :'.$record->id.'</legend>';
+
+        echo '<label for="fname">First name:</label>';
+        echo '<input type="text" id="fname" name="fname" value="'.$record->first_name.'"><br><br>';
+
+        echo '<label for="lname">Last name:</label>';
+        echo '<input type="text" id="lname" name="lname" value="'.$record->last_name.'"><br><br>';
+
+        echo '<label for="email">Email:</label>';
+        echo '<input type="email" id="email" name="email" value="'.$record->email.'"><br><br>';
+
+        echo '<label for="src">Source:</label>';
+        echo '<input type="text" id="src" name="source" value="'.$record->source.'"><br><br>';
+
+        echo '<label for="unsub">Unsubscribed:</label>';
+        echo '<input type="text" id="unsub" name="unsubscribed" value="'.$record->unsubscribed.'"><br><br>';
+
+        echo '<label for="isv">Is Verified?:</label>';
+        echo '<input type="text" id="isv" name="is_verified" value="'.$record->is_verified.'"><br><br>';
+
+        echo '<label for="is_s">Is SPAM?</label>';
+        echo '<input type="text" id="is_s" name="is_spam" value="'.$record->is_spam.'"><br><br>';
+
+	    submit_button( 'Save Modified Record' );
+        echo '</fieldset>';
+        echo '</form>';
+    }
+
+	/**
 	 * Retrieve email data from the database
 	 *
 	 * @param int $per_page
@@ -64,6 +102,18 @@ class WGA_Email_List extends WP_List_Table {
 		return $result;
 	}
 
+	/**
+	 * get an email record.
+	 *
+	 * @param int $id customer ID
+	 */
+	public static function get_email_record( $id ) {
+		global $wpdb;
+
+		$sql = "SELECT * FROM {$wpdb->prefix}wga_contact_list WHERE id = $id";
+		$result = $wpdb->get_row( $sql );
+        return $result;
+	}
 
 	/**
 	 * Delete an email record.
@@ -80,6 +130,60 @@ class WGA_Email_List extends WP_List_Table {
 		);
 	}
 
+	/**
+	 * Set SPAM bit in email record.
+	 *
+	 * @param int $id customer ID
+	 */
+	public static function spam_email_record( $id ) {
+		global $wpdb;
+
+		$wpdb->update(
+			"{$wpdb->prefix}wga_contact_list",
+            [ 'is_spam' => 1 ],
+			[ 'id' => $id ],
+			[ '%d' ]
+		);
+	}
+
+	/**
+	 * Set unsubscribe bit in email record.
+	 *
+	 * @param int $id customer ID
+	 */
+	public static function unsubscribe_email_record( $id ) {
+		global $wpdb;
+
+		$wpdb->update(
+			"{$wpdb->prefix}wga_contact_list",
+            [ 'unsubscribed' => 1 ],
+			[ 'id' => $id ],
+			[ '%d' ]
+		);
+	}
+
+	/**
+	 * Edit update email record.
+	 *
+	 * @param int $id customer ID
+	 */
+	public static function edit_update_email_record( $id, $fname, $lname, $email, $src, $unsub, $is_ver, $is_spam ) {
+		global $wpdb;
+        echo '<h1>here</h1>';
+		$wpdb->update(
+			"{$wpdb->prefix}wga_contact_list",
+            [ 
+                'first_name' => $fname,
+                'last_name' => $lname,
+                'email' => $email,
+                'source' => $src,
+                'unsubscribed' => $unsub,
+                'is_verified' => $is_ver,
+                'is_spam' => $is_spam,
+            ],
+			[ 'id' => $id ]
+		);
+	}
 
 	/**
 	 * Returns the count of records in the database.
@@ -148,7 +252,7 @@ class WGA_Email_List extends WP_List_Table {
 	 */
 	function column_cb( $item ) {
 		return sprintf(
-			'<input type="checkbox" name="bulk-delete[]" value="%s" />', $item['id']
+			'<input type="checkbox" name="bulk-ids[]" value="%s" />', $item['id']
 		);
 	}
 
@@ -164,12 +268,16 @@ class WGA_Email_List extends WP_List_Table {
 
 		$edit_nonce = wp_create_nonce( 'sp_edit_email_record' );
 		$delete_nonce = wp_create_nonce( 'sp_delete_email_record' );
+		$spam_nonce = wp_create_nonce( 'sp_SPAM_email_record' );
+		$unsub_nonce = wp_create_nonce( 'sp_unsubscribe_email_record' );
 
 		$title = '<strong>' . $item['id'] . '</strong>';
 
 		$actions = [
             'edit' => sprintf( '<a href="?page=%s&action=%s&email_record=%s&_wpnonce=%s">Edit</a>', esc_attr( $_REQUEST['page'] ), 'edit', absint( $item['id'] ), $edit_nonce ),
-			'delete' => sprintf( '<a href="?page=%s&action=%s&email_record=%s&_wpnonce=%s">Delete</a>', esc_attr( $_REQUEST['page'] ), 'delete', absint( $item['id'] ), $delete_nonce )
+			'delete' => sprintf( '<a href="?page=%s&action=%s&email_record=%s&_wpnonce=%s">Delete</a>', esc_attr( $_REQUEST['page'] ), 'delete', absint( $item['id'] ), $delete_nonce ),
+			'SPAM' => sprintf( '<a href="?page=%s&action=%s&email_record=%s&_wpnonce=%s">SPAM</a>', esc_attr( $_REQUEST['page'] ), 'SPAM', absint( $item['id'] ), $spam_nonce ),
+			'Unsubscribe' => sprintf( '<a href="?page=%s&action=%s&email_record=%s&_wpnonce=%s">Unsubscribe</a>', esc_attr( $_REQUEST['page'] ), 'Unsubscribe', absint( $item['id'] ), $unsub_nonce ),
 		];
 
 		return $title . $this->row_actions( $actions );
@@ -231,7 +339,7 @@ class WGA_Email_List extends WP_List_Table {
 	public function get_bulk_actions() {
 		$actions = [
 			'bulk-delete' => 'Delete',
-			'bulk-spam' => 'SPAM',
+			'bulk-SPAM' => 'SPAM',
 			'bulk-unsubscribe' => 'Unsubscribe',
 			'bulk-resend-verify' => 'Resend Verify',
 		];
@@ -265,16 +373,29 @@ class WGA_Email_List extends WP_List_Table {
 	public function process_bulk_action() {
 		//Detect when a bulk action is being triggered...
 				
-        /*
+        /**/ 
         echo '<pre>';
+        echo '<h2> $_REQUEST() </h2>';
         print_r($_REQUEST);
+        echo '<h2> $_GET() </h2>';
         print_r($_GET);
 	    print_r($this->current_action());
         echo '</pre>';
-        */
+        /**/
 
 		if ( 'edit' === $this->current_action() ) {
-            // This operation is handled by on-page php code.
+			// In our file that handles the request, verify the nonce.
+			$nonce = esc_attr( $_REQUEST['_wpnonce'] );
+			if ( ! wp_verify_nonce( $nonce, 'sp_edit_email_record' ) ) {
+				die( 'Go get a life script kiddies' );
+			}
+			else {
+				$email_record_id = absint( $_GET['email_record'] ) ;
+				$record = self::get_email_record( $email_record_id );
+                echo 'id: '.$record->id;
+                self::display_record_edit_form($record);
+			}
+            // SAVE operation is handled by on-page php code.
         }elseif ( 'delete' === $this->current_action() ) {
 			// In our file that handles the request, verify the nonce.
 			$nonce = esc_attr( $_REQUEST['_wpnonce'] );
@@ -285,20 +406,55 @@ class WGA_Email_List extends WP_List_Table {
 				$email_record_id = absint( $_GET['email_record'] ) ;
 				self::delete_email_record( $email_record_id );
 			}
-
+        }elseif ( 'SPAM' === $this->current_action() ) {
+			// In our file that handles the request, verify the nonce.
+			$nonce = esc_attr( $_REQUEST['_wpnonce'] );
+			if ( ! wp_verify_nonce( $nonce, 'sp_SPAM_email_record' ) ) {
+				die( 'Go get a life script kiddies' );
+			}
+			else {
+				$email_record_id = absint( $_GET['email_record'] ) ;
+				self::spam_email_record( $email_record_id );
+			}
+        }elseif ( 'Unsubscribe' === $this->current_action() ) {
+			// In our file that handles the request, verify the nonce.
+			$nonce = esc_attr( $_REQUEST['_wpnonce'] );
+			if ( ! wp_verify_nonce( $nonce, 'sp_unsubscribe_email_record' ) ) {
+				die( 'Go get a life script kiddies' );
+			}
+			else {
+				$email_record_id = absint( $_GET['email_record'] ) ;
+				self::unsubscribe_email_record( $email_record_id );
+			}
 		}
 
 		// If the delete bulk action is triggered
 		if ( ( isset( $_POST['action'] ) && $_POST['action'] == 'bulk-delete' )
 		     || ( isset( $_POST['action2'] ) && $_POST['action2'] == 'bulk-delete' )
 		) {
-
-			$delete_ids = esc_sql( $_POST['bulk-delete'] );
+			$delete_ids = esc_sql( $_POST['bulk-ids'] );
 
 			// loop over the array of record IDs and delete them
 			foreach ( $delete_ids as $id ) {
 				self::delete_email_record( $id );
+			}
+        } elseif ( ( isset( $_POST['action'] ) && $_POST['action'] == 'bulk-SPAM' )
+		     || ( isset( $_POST['action2'] ) && $_POST['action2'] == 'bulk-SPAM' )
+		) {
+			$spam_ids = esc_sql( $_POST['bulk-ids'] );
 
+			// loop over the array of record IDs and set them as SPAM
+			foreach ( $spam_ids as $id ) {
+				self::spam_email_record( $id );
+			}
+        } elseif ( ( isset( $_POST['action'] ) && $_POST['action'] == 'bulk-unsubscribe' )
+		     || ( isset( $_POST['action2'] ) && $_POST['action2'] == 'bulk-unsubscribe' )
+		) {
+			$unsub_ids = esc_sql( $_POST['bulk-ids'] );
+
+			// loop over the array of record IDs and set them as SPAM
+			foreach ( $unsub_ids as $id ) {
+				self::unsubscribe_email_record( $id );
 			}
 		}
 	}
@@ -349,7 +505,7 @@ class WGA_Manage_Email {
 	 */
 	public function wga_plugin_settings_page() {
         echo '<style type="text/css">';
-        echo '.wp-list-table .column-id { width: 6em; }';
+        echo '.wp-list-table .column-id { width: 7em; }';
         echo '.wp-list-table .column-First { width: 10em; }';
         echo '.wp-list-table .column-Last { width: 10em; }';
         echo '.wp-list-table .column-Email { width: 10em; }';

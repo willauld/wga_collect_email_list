@@ -330,13 +330,38 @@ function wga_admin_manage() {
 	if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	    if (!empty($_POST["filterrecords"])) {
             $filterrecords = sanitize_text_field($_POST["filterrecords"]);
-        }
-        if (!empty($_POST["downloadtable"])) {
+        }elseif (!empty($_POST["downloadtable"])) {
             add_action( 'wga_admin_init', 'csv_download_filtered_table',10,2);
             do_action( 'wga_admin_init', $filterrecords, $list );
             //do_action( 'wga_admin_init', $filterrecords, $list );
             //csv_download_filtered_table($filterrecords, $list);
+        }elseif (!empty($_POST["submit"]) && 
+            $_POST["submit"] == 'Save Modified Record'){
+        echo '<h1>have submit</h1>';
+            if (!empty($_POST['email_record']) &&
+                !empty($_POST['fname']) &&
+                !empty($_POST['lname']) &&
+                !empty($_POST['email']) &&
+                !empty($_POST['source']) &&
+                !empty($_POST['unsubscribed']) &&
+                !empty($_POST['is_verified']) &&
+                !empty($_POST['is_spam']) 
+            ) {
+        echo '<h1>have fields</h1>';
+                $id = $_POST['email_record'];
+                $fname = $_POST['fname'];
+                $lname = $_POST['lname'];
+                $email = $_POST['email'];
+                $source = $_POST['source'];
+                $unsub = $_POST['unsubscribed'];
+                $is_ver = $_POST['is_verified'];
+                $is_spam = $_POST['is_spam'];
+	            WGA_Manage_Email::get_instance()->edit_update_email_record( $id, $fname, $lname, $email, $source, $unsub, $is_ver, $is_spam ); 
+            }
+
         }
+        echo '<h1>processed fields</h1>';
+
     }
 
     //
