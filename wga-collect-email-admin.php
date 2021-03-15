@@ -337,18 +337,8 @@ function wga_admin_manage() {
             //csv_download_filtered_table($filterrecords, $list);
         }elseif (!empty($_POST["submit"]) && 
             $_POST["submit"] == 'Save Modified Record'){
-        echo '<h1>have submit</h1>';
-            if (!empty($_POST['email_record']) &&
-                !empty($_POST['fname']) &&
-                !empty($_POST['lname']) &&
-                !empty($_POST['email']) &&
-                !empty($_POST['source']) &&
-                !empty($_POST['unsubscribed']) &&
-                !empty($_POST['is_verified']) &&
-                !empty($_POST['is_spam']) 
-            ) {
-        echo '<h1>have fields</h1>';
-                $id = $_POST['email_record'];
+            if (!empty($_REQUEST['email_record']) ) {
+                $id = $_REQUEST['email_record'];
                 $fname = $_POST['fname'];
                 $lname = $_POST['lname'];
                 $email = $_POST['email'];
@@ -356,12 +346,9 @@ function wga_admin_manage() {
                 $unsub = $_POST['unsubscribed'];
                 $is_ver = $_POST['is_verified'];
                 $is_spam = $_POST['is_spam'];
-	            WGA_Manage_Email::get_instance()->edit_update_email_record( $id, $fname, $lname, $email, $source, $unsub, $is_ver, $is_spam ); 
+	            WGA_Manage_Email::get_instance()->email_list_obj->edit_update_email_record( $id, $fname, $lname, $email, $source, $unsub, $is_ver, $is_spam ); 
             }
-
         }
-        echo '<h1>processed fields</h1>';
-
     }
 
     //

@@ -44,9 +44,26 @@ class WGA_Email_List extends WP_List_Table {
 	 * @return mixed
 	 */
 	public static function display_record_edit_form($record){
-        echo '<form method="POST">';
-        echo '<fieldset>';
-        echo '<legend>Email Record id :'.$record->id.'</legend>';
+		echo '<style>';
+		//echo '.edit-form {';
+  		//echo '	background-color: #F6F7F8;';
+  		//echo '	border: 1px solid #D6D9DC;';
+  		//echo '	border-radius: 3px;';
+  		//echo '	width: 80%;';
+  		//echo '	padding: 50px;';
+  		//echo '	margin: 0 0 40px 0;';
+		//echo '}';
+		echo 'label {';
+    	echo 'display: inline-block;';
+    	echo 'width:100px;';
+    	echo 'text-align: right;';
+		echo '}';
+		echo '</style>';
+
+		echo '<div style="border: 2px solid #D6D9DC; background-color: #F6F7F8; border-radius: 6px; width: 60%; ipadding: 50px; margin: 0 0 40px 0; text-align: center; " >';
+        echo '<H1>Email Record id: '.$record->id.'</H1><br>';
+
+        echo '<form method="POST" class="edit-form">';
 
         echo '<label for="fname">First name:</label>';
         echo '<input type="text" id="fname" name="fname" value="'.$record->first_name.'"><br><br>';
@@ -70,8 +87,8 @@ class WGA_Email_List extends WP_List_Table {
         echo '<input type="text" id="is_s" name="is_spam" value="'.$record->is_spam.'"><br><br>';
 
 	    submit_button( 'Save Modified Record' );
-        echo '</fieldset>';
         echo '</form>';
+		echo '</div>';
     }
 
 	/**
@@ -167,9 +184,8 @@ class WGA_Email_List extends WP_List_Table {
 	 *
 	 * @param int $id customer ID
 	 */
-	public static function edit_update_email_record( $id, $fname, $lname, $email, $src, $unsub, $is_ver, $is_spam ) {
+	public function edit_update_email_record( $id, $fname, $lname, $email, $src, $unsub, $is_ver, $is_spam ) {
 		global $wpdb;
-        echo '<h1>here</h1>';
 		$wpdb->update(
 			"{$wpdb->prefix}wga_contact_list",
             [ 
@@ -180,6 +196,7 @@ class WGA_Email_List extends WP_List_Table {
                 'unsubscribed' => $unsub,
                 'is_verified' => $is_ver,
                 'is_spam' => $is_spam,
+				'updated_at' => current_time( 'mysql' ),
             ],
 			[ 'id' => $id ]
 		);
@@ -373,7 +390,7 @@ class WGA_Email_List extends WP_List_Table {
 	public function process_bulk_action() {
 		//Detect when a bulk action is being triggered...
 				
-        /**/ 
+        /*
         echo '<pre>';
         echo '<h2> $_REQUEST() </h2>';
         print_r($_REQUEST);
@@ -381,7 +398,7 @@ class WGA_Email_List extends WP_List_Table {
         print_r($_GET);
 	    print_r($this->current_action());
         echo '</pre>';
-        /**/
+        */
 
 		if ( 'edit' === $this->current_action() ) {
 			// In our file that handles the request, verify the nonce.
@@ -469,7 +486,7 @@ class WGA_Manage_Email {
 	// class instance
 	static $instance;
 
-	// customer WP_List_Table object
+	// email WP_List_Table object
 	public $email_list_obj;
 
 	// class constructor
@@ -525,9 +542,9 @@ class WGA_Manage_Email {
                             <form method="post">
 		                        <input type='hidden' name='action' value='apply_bulk_action'>
 								<?php
-								$this->messages_obj->prepare_items();
-								$this->messages_obj->get_views();
-								$this->messages_obj->display(); 
+								$this->email_list_obj->prepare_items();
+								$this->email_list_obj->get_views();
+								$this->email_list_obj->display(); 
 								?>
 							</form>
 						</div>
@@ -553,7 +570,7 @@ class WGA_Manage_Email {
 
 		add_screen_option( $option, $args );
 
-		$this->messages_obj = new WGA_Email_List();
+		$this->email_list_obj = new WGA_Email_List();
 	}
 
 

@@ -277,7 +277,7 @@ class WGA_Messages {
 	// class instance
 	static $instance;
 
-	// customer WP_List_Table object
+	// message WP_List_Table object
 	public $messages_obj;
 
 	// class constructor
