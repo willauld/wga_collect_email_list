@@ -118,6 +118,7 @@ function csv_download_filtered_table(/*$filterrecords, $list*/) {
         'Created_at',
         'Updated_at',
         'Is Verified?',
+        'Is SPAM?',
         'Hash',
         'Update Record by ID',
     );
@@ -226,10 +227,11 @@ function wga_insert_or_update_record($row_data) {
     $id = $row_data[0];
 	$updated_at = current_time( 'mysql' );
     //echo 'CREATED_AT ROW_DATA[6] '.  $row_data[6];
-    if ($row_data[10] == 1) {
-        //
-        // field index 10 is Update Record by ID
-        //
+    //
+    // field index 10 is Update Record by ID
+    //
+    $operation_control_field = $row_data[11];
+    if ($operation_control_field == 1) {
         //echo 'UPDATING record with ID: '.$row_data[0];
 		if ($wpdb->update(
 			"{$wpdb->prefix}wga_contact_list",
@@ -242,7 +244,8 @@ function wga_insert_or_update_record($row_data) {
                 'created_at' => date("Y-m-d H:i:s", strtotime($row_data[6])),
 				'updated_at' => $updated_at,
                 'is_verified' => $row_data[8],
-                'vhash' => $row_data[9],
+                'is_spam' => $row_data[9],
+                'vhash' => $row_data[10],
 			),
 			array( //where
 				'id' => $id,
@@ -256,15 +259,16 @@ function wga_insert_or_update_record($row_data) {
             return false;
         }
     
-    }elseif ($row_data[10] == 2) {
+    }elseif ($operation_control_field == 2) {
         //
-        // field index 10 is Insert record as is (restore data) 
+        // operation_control_file = 2 is Insert record as is 
+        //  (i.e. restore data) 
         //  May need to add hash
         //
         //echo 'INSERTING old record with ID: '.$row_data[0];
 		    $table_name = $wpdb->prefix . 'wga_contact_list';
-            if ($row_data[9] == '') {
-		        $row_data[9] = md5( rand(0,1000) ); // Generate random 32 character hash
+            if ($row_data[10] == '') {
+		        $row_data[10] = md5( rand(0,1000) ); // Generate random 32 character hash
             }
 		    $wpdb->insert( 
 			    $table_name, 
@@ -278,7 +282,8 @@ function wga_insert_or_update_record($row_data) {
                 'created_at' => date("Y-m-d H:i:s", strtotime($row_data[6])),
                 'updated_at' => date("Y-m-d H:i:s", strtotime($row_data[7])),
                 'is_verified' => $row_data[8],
-				'vhash' => $row_data[9], 
+                'is_spam' => $row_data[9],
+				'vhash' => $row_data[10], 
 			    ) 
             );
             //
@@ -301,7 +306,8 @@ function wga_insert_or_update_record($row_data) {
                 'created_at' => date("Y-m-d H:i:s", strtotime($row_data[6])),
 				'updated_at' => $updated_at,
                 'is_verified' => $row_data[8],
-				'vhash' => $row_data[9], 
+				'is_spam' => $row_data[9], 
+				'vhash' => $row_data[10], 
 			    ) 
             );
             //

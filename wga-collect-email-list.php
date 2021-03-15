@@ -243,6 +243,7 @@ function get_email_list() {
 		created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
 		updated_at datetime,
 		is_verified tinyint(1) DEFAULT 0,
+		is_spam tinyint(1) DEFAULT 0,
         vhash varchar(32) NOT NULL,
 		UNIQUE KEY id (id)
 		*/
@@ -266,6 +267,7 @@ function get_email_list() {
 			$list[$i]["created_at"] = $result->created_at;
 			$list[$i]["updated_at"] = $result->updated_at;
 			$list[$i]["is_verified"] = intval($result->is_verified);
+			$list[$i]["is_spam"] = intval($result->is_spam);
 			$list[$i]["vhash"] = stripslashes($result->vhash);
 
             $i++;
