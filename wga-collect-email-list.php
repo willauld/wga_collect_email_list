@@ -178,15 +178,19 @@ function wga_db_table_install() {
 		);
 	}
 
-	$auto_table_name = $wpdb->prefix . 'wga_auto_list';
+	$auto_table_name = $wpdb->prefix . 'wga_mailings_list';
 
 	$sql = "CREATE TABLE $auto_table_name (
-		id int(10) NOT NULL AUTO_INCREMENT,
-		auto_message_id int(10),
-		auto_acction_tag varchar(50),
-		auto_created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-		auto_updated_at datetime,
-		UNIQUE KEY id (id)
+		mailings_id int(10) NOT NULL AUTO_INCREMENT,
+		mailings_message_id int(10),
+        mailings_filter text,
+		mailings_acction_tag varchar(50),
+        mailings_start_date datetime NOT NULL,
+		mailings_created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+		mailings_updated_at datetime,
+        mailings_sent_to longtext, 
+        mailings_completed tinyint(1) DEFAULT 0,
+		UNIQUE KEY mailings_id (mailings_id)
 	) $charset_collate;";
 
 

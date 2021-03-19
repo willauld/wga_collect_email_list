@@ -1,5 +1,93 @@
 <?php
 
+function wga_new_mailing($mailing_m_id = "") {
+    //
+    // Form for creating a "mailing"
+    //
+    if (!isset($is_verified_chk)) {
+        $is_verified_chk = "true";
+        $is_spam_chk = "false";
+        $is_unsub_chk = "false";
+    }
+
+    echo '<div style="margin: 3em;  padding: 2em; border: 2px solid #262661; border-radius: 5px; width: 40%; " >';
+
+    echo '<form method="post">';
+
+    echo '<label for="messageid" >Message ID</label>';
+    echo '<input id="messageid" name="mailing_message_id" type="number" value="'.$mailing_m_id.'" >';
+    //
+    // Radio button for is_verified
+    //
+    echo '<h2>Filters:</h2>';
+	echo '<div >';//container of radio
+	echo '  <em style=" display:inline-block; width:6em;">is_verified?</em>';
+
+	echo '    <label for="vany" class="radio-is_verified">';
+    $t1 = ($is_verified_chk == "any") ? "checked" : "";
+	echo '      <input id="vany" type="radio" name="is_verified_chk" value="any" '. $t1 .' >Any';
+	echo '    </label>';
+
+	echo '    <label for="vvalue_true" class="radio-is_verified">';
+    $t1 = ($is_verified_chk == "true") ? "checked" : "";
+	echo '      <input id="vvalue_true" type="radio" name="is_verified_chk" value="true" '.$t1.' >True';
+	echo '    </label>';
+
+	echo '    <label for="vvalue_false" class="radio-is_verified">';
+    $t1 = ($is_verified_chk == "false") ? "checked" : "";
+	echo '      <input id="vvalue_false" type="radio" name="is_verified_chk" value="false" '.$t1.'>False';
+	echo '    </label>';
+
+	echo '</div><br>';//container of radio
+
+	echo '<div >';//container of radio
+	echo '  <em style=" display:inline-block; width:6em;">is_SPAM?</em>';
+
+	echo '    <label for="sany" class="radio-is_spam">';
+    $t1 = ($is_spam_chk == "any") ? "checked" : "";
+	echo '      <input id="sany" type="radio" name="is_spam_chk" value="any" '. $t1 .' >Any';
+	echo '    </label>';
+
+	echo '    <label for="svalue_true" class="radio-is_spam">';
+    $t1 = ($is_spam_chk == "true") ? "checked" : "";
+	echo '      <input id="svalue_true" type="radio" name="is_spam_chk" value="true" '.$t1.' >True';
+	echo '    </label>';
+
+	echo '    <label for="svalue_false" class="radio-is_spam">';
+    $t1 = ($is_spam_chk == "false") ? "checked" : "";
+	echo '      <input id="svalue_false" type="radio" name="is_spam_chk" value="false" '.$t1.'>False';
+	echo '    </label>';
+
+	echo '</div><br>';//container of radio
+
+	echo '<div >';//container of radio
+	echo '  <em style=" display:inline-block; width:6em;">unsubscribed?</em>';
+
+	echo '    <label for="uany" class="radio-unsub">';
+    $t1 = ($is_unsub_chk == "any") ? "checked" : "";
+	echo '      <input id="uany" type="radio" name="is_unsub_chk" value="any" '. $t1 .' >Any';
+	echo '    </label>';
+
+	echo '    <label for="uvalue_true" class="radio-unsub">';
+    $t1 = ($is_unsub_chk == "true") ? "checked" : "";
+	echo '      <input id="uvalue_true" type="radio" name="is_unsub_chk" value="true" '.$t1.' >True';
+	echo '    </label>';
+
+	echo '    <label for="uvalue_false" class="radio-unsub">';
+    $t1 = ($is_unsub_chk == "false") ? "checked" : "";
+	echo '      <input id="uvalue_false" type="radio" name="is_unsub_chk" value="false" '.$t1.'>False';
+	echo '    </label>';
+
+	echo '</div><br>';//container of radio
+
+    echo '<label for="startdate" >Start Date for Mailing</label>';
+    echo '<input id="startdate" name="date_to_start" type="date" value="" >';
+
+    submit_button("Submit Mailing");
+    echo '</form>';
+
+    echo '</div>';
+}
 
 function wga_admin_options(){
     // Options menu
@@ -10,11 +98,15 @@ function wga_admin_options(){
 	$m_id = get_option( 'initialwelcomemessageid' );
 
 	if ($_SERVER["REQUEST_METHOD"] == "POST") {
-	    if (!empty($_POST["submit"]) && $_POST["submit"] == 'Assign new message id for the Initial Welcome') {
-	        if (!empty($_POST["initwelcome"])) {
-	            $m_id = $_POST["initwelcome"] ;
-	            add_option( 'initialwelcomemessageid', $m_id );
-                //$filterrecords = sanitize_text_field($_POST["filterrecords"]);
+	    if (!empty($_POST["submit"])) {
+            if ($_POST["submit"] == 'Assign new message id for the Initial Welcome') {
+	            if (!empty($_POST["initwelcome"])) {
+	                $m_id = $_POST["initwelcome"] ;
+	                add_option( 'initialwelcomemessageid', $m_id );
+                    //$filterrecords = sanitize_text_field($_POST["filterrecords"]);
+                }
+            }elseif ($_POST["submit"] == 'Create New Mailing') {
+                wga_new_mailing();
             }
         }
     }
@@ -23,15 +115,24 @@ function wga_admin_options(){
     echo '</pre>';
 
 	echo '<div class="wrap">';
-	echo '	<h2>Welcome To My Options page</h2>';
+	echo '	<h2>Welcome To My Options & Mailings page</h2>';
 	echo '</div>';
     echo '<br><br>';
 
-
+    //
+    // Set Message for Inital Welcome email
+    //
     echo '<form method="post">';
     echo '<label for="initialwelcome" >Initial Welcome Message ID</label>';
     echo '<input id="initialwelcome" name="initwelcome" type="number" value="'.$m_id.'" >';
     submit_button("Assign new message id for the Initial Welcome");
+    echo '</form>';
+
+    //
+    // Create new "mailing"
+    //
+    echo '<form method="post">';
+    submit_button("Create New Mailing");
     echo '</form>';
 
     /*
