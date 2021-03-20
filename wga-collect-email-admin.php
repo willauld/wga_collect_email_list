@@ -96,6 +96,7 @@ function wga_admin_options(){
     }
 
 	$m_id = get_option( 'initialwelcomemessageid' );
+    $mail_id = -1;
 
 	if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	    if (!empty($_POST["submit"])) {
@@ -107,6 +108,13 @@ function wga_admin_options(){
                 }
             }elseif ($_POST["submit"] == 'Create New Mailing') {
                 wga_new_mailing();
+            }elseif ($_POST["submit"] == 'Submit Mailing') {
+                $mess_id = $_POST['mailing_message_id'];
+                $verified = $_POST['is_verified_chk'];
+                $spam = $_POST['is_spam_chk'];
+                $unsub = $_POST['is_unsub_chk'];
+                $start = $_POST['date_to_start'];
+                $mail_id = wga_insert_mailing($mess_id, $verified, $spam, $unsub, $start);
             }
         }
     }
@@ -131,6 +139,9 @@ function wga_admin_options(){
     //
     // Create new "mailing"
     //
+    if ($mail_id > 0) {
+        echo "<h2 style='inline-block; background:#FFFF00 ;'> Mailing Created with id: $mail_id </h2>";
+    }
     echo '<form method="post">';
     submit_button("Create New Mailing");
     echo '</form>';
@@ -589,6 +600,31 @@ function wga_update_message($id, $subject, $content) {
         return true;
 	} 
     return false;
+}
+
+function wga_insert_mailing($mess_id, $verified, $spam, $unsub, $start) {
+    global $wpdb;
+
+    //echo 'INSERTING new record with no mailings_id yet';
+    $now = current_time( 'mysql' );
+	$table_name = $wpdb->prefix . 'wga_mailings_list';
+	$result = $wpdb->insert( 
+		$table_name, 
+		array( 
+		    'mailings_message_id' => $mess_id,
+            'mailings_verified' => $verified,
+            'mailings_spam' => $spam,
+            'mailings_unsubscribed' => $unsub,
+            'mailings_start_date' =>  $start,
+		    'mailings_created_at' =>  $now, 
+		) 
+    );
+    if ($result) {
+        $sql_cmd = $wpdb->prepare("SELECT mailings_id FROM {$wpdb->prefix}wga_mailings_list WHERE (mailings_message_id = %s AND mailings_start_date = %s AND mailings_created_at = %s)", $mess_id, $start, $now);
+        $results = $wpdb->get_results( $sql_cmd );
+        $result = $results[0]->mailings_id;
+    }
+    return $result;
 }
 
 function wga_insert_message($subject, $content) {

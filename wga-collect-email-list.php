@@ -178,13 +178,14 @@ function wga_db_table_install() {
 		);
 	}
 
-	$auto_table_name = $wpdb->prefix . 'wga_mailings_list';
+	$table_name = $wpdb->prefix . 'wga_mailings_list';
 
-	$sql = "CREATE TABLE $auto_table_name (
+	$sql = "CREATE TABLE $table_name (
 		mailings_id int(10) NOT NULL AUTO_INCREMENT,
 		mailings_message_id int(10),
-        mailings_filter text,
-		mailings_acction_tag varchar(50),
+        mailings_verified varchar(6),
+        mailings_spam varchar(6),
+        mailings_unsubscribed varchar(6),
         mailings_start_date datetime NOT NULL,
 		mailings_created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
 		mailings_updated_at datetime,
@@ -196,7 +197,7 @@ function wga_db_table_install() {
 
 	$dbdelta_result = dbDelta( $sql );
 	
-	if ( $wpdb->get_var("SHOW TABLES LIKE '$auto_table_name'") != $auto_table_name ) {
+	if ( $wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name ) {
 		// Table was not created !!
 		wp_die(
 			'<p>' .
