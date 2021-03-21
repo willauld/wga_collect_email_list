@@ -140,7 +140,7 @@ function wga_admin_options(){
     // Create new "mailing"
     //
     if ($mail_id > 0) {
-        echo "<h2 style='inline-block; background:#FFFF00 ;'> Mailing Created with id: $mail_id </h2>";
+        echo "<h2 style='inline-block; background:#FFFF00; width:30%'> Mailing Created with id: $mail_id </h2>";
     }
     echo '<form method="post">';
     submit_button("Create New Mailing");
