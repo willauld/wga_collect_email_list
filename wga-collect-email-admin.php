@@ -115,11 +115,19 @@ function wga_admin_options(){
                 $unsub = $_POST['is_unsub_chk'];
                 $start = $_POST['date_to_start'];
                 $mail_id = wga_insert_mailing($mess_id, $verified, $spam, $unsub, $start);
+            }elseif ($_POST["submit"] == 'Do Mailing') {
+                if (isset($_POST['mailing_id'])) {
+                    $mailings_id = $_POST['mailing_id'];
+                    $str = wga_send_mailings_email($mailings_id);
+                }
             }
         }
     }
     echo '<pre>';
     print_r($_REQUEST);
+    if (isset($str)) {
+        print_r($str);
+    }
     echo '</pre>';
 
 	echo '<div class="wrap">';
@@ -146,6 +154,14 @@ function wga_admin_options(){
     submit_button("Create New Mailing");
     echo '</form>';
 
+    //
+    // Do mailing for mailing id
+    //
+    echo '<form method="post">';
+    echo '<label for="mailingid" >Mailing ID</label>';
+    echo '<input id="mailingid" name="mailing_id" type="number" >';
+    submit_button("Do Mailing");
+    echo '</form>';
     /*
     $my_ob_level = ob_get_level();
     $my_ob_content = ob_get_contents();
@@ -749,6 +765,155 @@ function wga_send_initial_email($email_id) {
 	//$email_response = wp_mail( $to, $subject, $content, $headers );
 
 	return $email_response;
+}
+
+function wga_send_mailings_email($mailings_id) {
+    $err_msg = "";
+    global $wpdb;
+    //
+	// Send HTML email - Email Mailings
+	//
+
+    $err_msg =  '<H2> in send_mailings_email() </h2>';
+    //
+    // Fetch mailings details
+    //
+    $sql_cmd0 = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}wga_mailings_list WHERE (mailings_id = %d)", $mailings_id);
+    $mailings_details = $wpdb->get_results( $sql_cmd0 );
+    if (!isset($mailings_details)) {
+        // no mailings with the given id
+        $err_msg .=  '<h2> mailings_details empty </h2>';
+        return $err_msg;
+    }
+    $start = stripslashes($mailings_details[0]->mailings_start_date);
+    $now = current_time( 'mysql' );
+    if ($start > $now) {
+        // now schedule to start yet
+        $err_msg .=  '<h2> start later than now </h2>';
+        return $err_msg;
+    }
+    $m_id = stripslashes($mailings_details[0]->mailings_message_id);
+    $verified = stripslashes($mailings_details[0]->mailings_verified);
+    $spam = stripslashes($mailings_details[0]->mailings_spam);
+    $unsub = stripslashes($mailings_details[0]->mailings_unsubscribed);
+
+    $sql_cmd1 = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}wga_message_list WHERE (message_id = %d)", $m_id);
+    $mresults = $wpdb->get_results( $sql_cmd1 );
+
+    $subject = stripslashes($mresults[0]->message_subject);
+    $content = stripslashes($mresults[0]->message_content);
+
+    $where_str = "";
+    if ($verified == "true") {
+        $where_str .= " is_verified = 1 ";
+    }else if ($verified == "false") {
+        $where_str .= " is_verified = 0 ";
+    }
+    $cmd_len = strlen($where_str);
+    $and_str = "";
+    if ($cmd_len > 0 ) {
+        $and_str .= " AND ";
+    }
+    if ($spam == "true") {
+        $where_str .= $and_str . " is_spam = 1 ";
+    }else if ($spam == "false") {
+        $where_str .= $and_str . " is_spam = 0 ";
+    }
+    $and_str = "";
+    if (strlen($where_str) > $cmd_len ) {
+        $and_str .= " AND ";
+    }
+    if ($unsub == "true") {
+        $where_str .= $and_str . " unsubscribed = 1 ";
+    }else if ($unsub == "false") {
+        $where_str .= $and_str . " unsubscribed = 0 ";
+    }
+    if (strlen($where_str) > 0 ) {
+        $where_str = "WHERE (".$where_str.")";
+    }
+    echo "<h2> $where_str </h2>";
+    
+    $sql_cmd2 = "SELECT * FROM {$wpdb->prefix}wga_contact_list ".$where_str;
+    $email_results = $wpdb->get_results( $sql_cmd2 );
+
+    foreach ($email_results as $contact) {
+	
+	    $first_name = $contact->first_name;
+	    $last_name = $contact->last_name;
+	    $email = $contact->email;
+	
+	    $message = '<html>
+	                    <head>
+	                        <style type=“text/css”>
+	                        </style>
+	                    </head>
+	                    <body>
+	                        <img width="600" src="'.site_url().'/wp-content/uploads/2020/12/LogoOregonOpenPrimaries.png" alt="Let ALL voters vote!"/><br><br>
+	                        <br><br>
+	                        '.$content.'
+	                    </body>
+	                </html>';
+		// get the blog administrator's email address
+		//$to = get_option( 'admin_email' );
+		
+	    // test code - button code generated at: https://buttons.cm/
+	    /*
+	    $message = '<html>
+	                    <head>
+	                        <style type=“text/css”>
+	                        </style>
+	                    </head>
+	                    <body>
+	                        <img width="600" src="'.site_url().'/wp-content/uploads/2020/12/LogoOregonOpenPrimaries.png" alt="Let ALL voters vote!"/><br><br>
+	                        <br><br>
+	                        <br>' .
+	                        $name . ',<br>
+	                        Please click the following to verify your email address:
+	                        <table width="100%" cellspacing="50" cellpadding="0">
+	                            <tr>
+	                                <td><td>
+	                        <div><!--[if mso]>
+	                            <v:roundrect            xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="'.site_url().'/verify.php?subscribe=join&email='.$email.'&vhash='.$hash.'" style="height:50px;v-text-anchor:middle;width:350px;" arcsize="8%" strokecolor="#262661" fillcolor="#262661">
+	                                <w:anchorlock/>
+	                                <center style="color:#FFEA0F;font-family:sans-serif;font-size:13px;font-weight:bold;">
+	                                    Yes, subscribe me to Oregon Open Primaries!
+	                                </center>
+	                            </v:roundrect>
+	                            <![endif]--><a href="'.site_url().'/verify.php?subscribe=join&email='.$email.'&vhash='.$hash.'" 
+	                                style="background-color:#262661;border:1px solid #262661;border-radius:4px;color:#FFEA0F;display:inline-block;font-family:sans-serif;font-size:13px;font-weight:bold;line-height:50px;text-align:center;text-decoration:none;width:350px;-webkit-text-size-adjust:none;mso-hide:all;">
+	                                    Yes, subscribe me to Oregon Open Primaries!
+	                                </a>
+	                        </div>
+	                                </td></td>
+	                            </tr>
+	                        </table>
+	                        Thanks <br>
+	                        <br>
+	                        Adding "' .$email. '" to email list. <br>
+	                        <br>
+	                    </body>
+	                </html>';
+		*/ 
+		$to = "$first_name $last_name <$email>";
+		//$headers = "From: $name <$email>" . "\r\n";
+		$headers = "From: OregonOpenPrimaries.org <info@OregonOpenPrimaries.org> \r\n";
+		//$headers .= "Cc:OregonOpenPrimaries.org <info@OregonOpenPrimaries.org> \r\n";
+		$headers .= "Cc:".get_option( 'admin_email' )." \r\n";
+		$headers .= "MIME-Version: 1.0\r\n";
+		$headers .= "Content-type: text/html\r\n";
+	
+		// original: $email_response = wp_mail( $to, $subject, $message, $headers );
+		$email_response = wp_mail( $to, $subject, $message, $headers );
+        if (!$email_response) {
+            // Error, something went wrong, tell someone, some how
+            $err_msg .=  "<h2>&& $to failed &&</h2>";
+            return $err_msg;
+        }
+		//$email_response = wp_mail( $to, $subject, $content, $headers );
+
+        $err_msg .=  "<h2> @ $first_name $last_name $email @ </h2>";
+    }
+    return $err_msg;
 }
 
 function wga_admin_messages() {
