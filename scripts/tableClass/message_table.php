@@ -230,13 +230,13 @@ class WGA_Message_List extends WP_List_Table {
 	public function process_bulk_action() {
 		//Detect when a bulk action is being triggered...
 				
-        /*
+        /**/ 
         echo '<pre>';
         print_r($_REQUEST);
         print_r($_GET);
 	    //print_r(absint($_GET['message']));
         echo '</pre>';
-        */
+        /**/
 
 		if ( 'edit' === $this->current_action() ) {
             // This operation is handled by on-page php code.
