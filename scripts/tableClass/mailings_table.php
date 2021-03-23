@@ -411,15 +411,13 @@ class WGA_Manage_Mailings {
 	public function wga_plugin_settings_page() {
         echo '<style type="text/css">';
         echo '.wp-list-table .column-id { width: 7em; }';
-        echo '.wp-list-table .column-First { width: 10em; }';
-        echo '.wp-list-table .column-Last { width: 10em; }';
-        echo '.wp-list-table .column-Email { width: 10em; }';
-        echo '.wp-list-table .column-Source { width: 10em; }';
-        echo '.wp-list-table .column-Unsubscribed { width: 7em; }';
-        echo '.wp-list-table .column-Is { width: 6em; }';
-        echo '.wp-list-table .column-Created_at { width: 7em; }';
-        echo '.wp-list-table .column-Updated_at { width: 7em; }';
-        echo '.wp-list-table .column-Hash { width: 5em; }';
+        echo '.wp-list-table .column-Message { width: 8em; }';
+        echo '.wp-list-table .column-F { width: 10em; }';
+        echo '.wp-list-table .column-Start { width: 7em; }';
+        echo '.wp-list-table .column-Created { width: 7em; }';
+        echo '.wp-list-table .column-Updated { width: 8em; }';
+        echo '.wp-list-table .column-Sent { width: 6em; }';
+        echo '.wp-list-table .column-Completed { width: 8em; }';
         echo '</style>';
 		?>
 		<div class="wrap">
