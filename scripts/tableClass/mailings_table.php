@@ -105,24 +105,22 @@ class WGA_Mailings_List extends WP_List_Table {
 	 * Edit update mailings record.
 	 *
 	 * @param int $id mailings ID
-     * 
-     * FIXME NEEDS TO BE CUSTOMIZED FOR MAILINGS
 	 */
-	public function edit_update_mailings_record( $id, $fname, $lname, $email, $src, $unsub, $is_ver, $is_spam ) {
+	public function edit_update_mailings_record( $id, $messid, $verify, $spam, $unsub, $start, $sent_to, $complete ) {
 		global $wpdb;
 		$wpdb->update(
 			"{$wpdb->prefix}wga_contact_list",
             [ 
-                'first_name' => $fname,
-                'last_name' => $lname,
-                'email' => $email,
-                'source' => $src,
-                'unsubscribed' => $unsub,
-                'is_verified' => $is_ver,
-                'is_spam' => $is_spam,
-				'updated_at' => current_time( 'mysql' ),
+                'mailings_message_id' => $messid,
+                'mailings_verified' => $verify,
+                'mailings_spam' => $spam,
+                'mailings_unsubscribed' => $unsub,
+                'mailings_start_date' => $start,
+				'mailings_updated_at' => current_time( 'mysql' ),
+                'mailings_sent_to' => $sent_to,
+                'mailings_completed' => $complete,
             ],
-			[ 'id' => $id ]
+			[ 'mailings_id' => $id ]
 		);
 	}
 
@@ -153,34 +151,30 @@ class WGA_Mailings_List extends WP_List_Table {
 	 * @param string $column_name
 	 *
 	 * @return mixed
-     * 
-     * FIXME NEEDS TO BE CUSTOMIZED FOR MAILINGS
 	 */
 	public function column_default( $item, $column_name ) {
 		switch ( $column_name ) {
 			case 'id':
-				return $item[ 'id' ];
-			case 'First Name':
-				return $item[ 'first_name' ];
-			case 'Last Name':
-				return $item[ 'last_name' ];
-			case 'Email':
-				return $item[ 'email' ];
-			case 'Source':
-				return $item[ 'source' ];
-            case 'Unsubscribed':
-				return $item[ 'unsubscribed' ];
-			case 'Created_at':
-				return $item[ 'created_at' ];
-			case 'Updated_at':
-				return $item[ 'updated_at' ];
+				return $item[ 'mailings_id' ];
+			case 'Message id':
+				return $item[ 'mailings_message_id' ];
+			case 'F verified':
+				return $item[ 'mailings_verified' ];
+			case 'F SPAM':
+				return $item[ 'mailings_spam' ];
+            case 'F unsubscribed':
+				return $item[ 'mailings_unsubscribed' ];
+			case 'Start date':
+				return $item[ 'mailings_start_date' ];
+			case 'Created at':
+				return $item[ 'mailings_created_at' ];
+			case 'Updated at':
+				return $item[ 'mailings_updated_at' ];
 				//return $item[ 'message_'.$column_name ];
-			case 'Is Verified?':
-				return $item[ 'is_verified' ];
-			case 'Is SPAM?':
-				return $item[ 'is_spam' ];
-			case 'Hash':
-				return $item[ 'vhash' ];
+			case 'Sent to':
+				return $item[ 'mailings_sent_to' ];
+			case 'Completed':
+				return $item[ 'mailings_completed' ];
 			default:
 				return print_r( $item, true ); //Show the whole array for troubleshooting purposes
 		}
@@ -195,7 +189,7 @@ class WGA_Mailings_List extends WP_List_Table {
 	 */
 	function column_cb( $item ) {
 		return sprintf(
-			'<input type="checkbox" name="bulk-ids[]" value="%s" />', $item['id']
+			'<input type="checkbox" name="bulk-ids[]" value="%s" />', $item['mailings_id']
 		);
 	}
 
@@ -212,11 +206,11 @@ class WGA_Mailings_List extends WP_List_Table {
 		$edit_nonce = wp_create_nonce( 'sp_edit_mailings_record' );
 		$delete_nonce = wp_create_nonce( 'sp_delete_mailings_record' );
 
-		$title = '<strong>' . $item['id'] . '</strong>';
+		$title = '<strong>' . $item['mailings_id'] . '</strong>';
 
 		$actions = [
-            'edit' => sprintf( '<a href="?page=%s&action=%s&mailings_record=%s&_wpnonce=%s">Edit</a>', esc_attr( $_REQUEST['page'] ), 'edit', absint( $item['id'] ), $edit_nonce ),
-			'delete' => sprintf( '<a href="?page=%s&action=%s&mailings_record=%s&_wpnonce=%s">Delete</a>', esc_attr( $_REQUEST['page'] ), 'delete', absint( $item['id'] ), $delete_nonce ),
+            'edit' => sprintf( '<a href="?page=%s&action=%s&mailings_record=%s&_wpnonce=%s">Edit</a>', esc_attr( $_REQUEST['page'] ), 'edit', absint( $item['mailings_id'] ), $edit_nonce ),
+			'delete' => sprintf( '<a href="?page=%s&action=%s&mailings_record=%s&_wpnonce=%s">Delete</a>', esc_attr( $_REQUEST['page'] ), 'delete', absint( $item['mailings_id'] ), $delete_nonce ),
 		];
 
 		return $title . $this->row_actions( $actions );
@@ -227,13 +221,20 @@ class WGA_Mailings_List extends WP_List_Table {
 	 *  Associative array of columns
 	 *
 	 * @return array
-     * 
-     * FIXME NEEDS TO BE CUSTOMIZED FOR MAILINGS
 	 */
 	function get_columns() {
 		$columns = [
 			'cb'      => '<input type="checkbox" />',
 			'id'    => __( 'id', 'sp' ),
+		    'Message id' => 'Message id',
+            'F verified' => 'F verified',
+            'F SPAM' => 'F SPAM',
+            'F unsubscribed' => 'F unsubscribed',
+            'Start date' => 'Start date',
+		    'Created at' => 'Created at',
+		    'Updated at' => 'Updated at', 
+            'Sent to' => 'Sent to',
+            'Completed' => 'Completed',
 		];
 
 		return $columns;
@@ -247,12 +248,30 @@ class WGA_Mailings_List extends WP_List_Table {
      * 
      * FIXME NEEDS TO BE CUSTOMIZED FOR MAILINGS
 	 */
+        /*
+		mailings_id int(10) NOT NULL AUTO_INCREMENT,
+		mailings_message_id int(10),
+        mailings_verified varchar(6),
+        mailings_spam varchar(6),
+        mailings_unsubscribed varchar(6),
+        mailings_start_date datetime NOT NULL,
+		mailings_created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+		mailings_updated_at datetime,
+        mailings_sent_to longtext, 
+        mailings_completed tinyint(1) DEFAULT 0,
+        */
 	public function get_sortable_columns() {
 		$sortable_columns = array(
 			'id' => array( 'mailings_id', true ),
-			'Created_at' => array( 'mailings_created_at', true ),
-			'Updated_at' => array( 'mailings_updated_at', true ),
-            // add start date
+			'Message id' => array( 'mailings_message_id', true ),
+			'F verified' => array( 'mailings_verified', true ),
+			'F SPAM' => array( 'mailings_spam', true ),
+			'F unsubscribed' => array( 'mailings_unsubscribed', true ),
+			'Start date' => array( 'mailings_start_date', true ),
+			'Created at' => array( 'mailings_created_at', true ),
+			'Updated at' => array( 'mailings_updated_at', true ),
+			'Sent to' => array( 'mailings_sent_to', true ),
+			'Completed' => array( 'mailings_completed', true ),
 		);
 
 		return $sortable_columns;
@@ -439,7 +458,7 @@ class WGA_Manage_Mailings {
 
 		add_screen_option( $option, $args );
 
-		$this->email_list_obj = new WGA_Mailings_List();
+		$this->mailings_list_obj = new WGA_Mailings_List();
 	}
 
 
