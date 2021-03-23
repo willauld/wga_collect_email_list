@@ -136,6 +136,11 @@ function wga_admin_options(){
     echo '<br><br>';
 
     //
+    // email list table display
+    //
+	WGA_Manage_Mailings::get_instance()->wga_plugin_settings_page();
+
+    //
     // Set Message for Inital Welcome email
     //
     echo '<form method="post">';

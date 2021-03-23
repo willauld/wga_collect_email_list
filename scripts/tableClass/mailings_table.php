@@ -411,9 +411,9 @@ class WGA_Manage_Mailings {
                             <form method="post">
 		                        <input type='hidden' name='action' value='apply_bulk_action'>
 								<?php
-								$this->email_list_obj->prepare_items();
-								$this->email_list_obj->get_views();
-								$this->email_list_obj->display(); 
+								$this->mailings_list_obj->prepare_items();
+								$this->mailings_list_obj->get_views();
+								$this->mailings_list_obj->display(); 
 								?>
 							</form>
 						</div>
@@ -445,7 +445,7 @@ class WGA_Manage_Mailings {
 
 	/** Singleton instance */
 	public static function get_instance() {
-		if ( ! isset( self::$instance ) ) {
+		if ( ! isset( self::$instance ) || self::$instance == null ) {
 			self::$instance = new self();
 		}
 
