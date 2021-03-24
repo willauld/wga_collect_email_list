@@ -1,114 +1,5 @@
 <?php
 
-function wga_new_mailing($mailings_id = -1) {
-	global $wpdb;
-    //
-    // Form for creating a "mailing"
-    //
-    if ($mailings_id <= 0) {
-        // new mailings
-        $is_verified_chk = "true";
-        $is_spam_chk = "false";
-        $is_unsub_chk = "false";
-        $mailing_m_id = "";
-    }else {
-        // edit a mailing
-		$sql = "SELECT * FROM {$wpdb->prefix}wga_mailings_list WHERE mailings_id = $mailings_id";
-		$result = $wpdb->get_row( $sql );
-
-        if ($result){
-            $mailing_m_id = $result->mailings_message_id;
-            $is_verified_chk = $result->mailings_verified;
-            $is_spam_chk = $result->mailings_spam;
-            $is_unsub_chk = $result->mailings_unsubscribed;
-            $start = $result->mailings_start_date;
-            //$created = $result->mailings_created_at;
-        }else{
-            $mailing_m_id = -2;
-        }
-    }
-
-    echo '<div style="margin: 3em;  padding: 2em; border: 2px solid #262661; border-radius: 5px; width: 40%; " >';
-
-    echo '<form method="post">';
-    echo '<input name="wga_mailing_edit_id" type="hidden" value="'.$mailings_id.'">';
-    //echo '<input name="wga_created" type="hidden" value="'.$created.'">';
-
-    echo '<label for="messageid" >Message ID</label>';
-    echo '<input id="messageid" name="mailing_message_id" type="number" value="'.$mailing_m_id.'" >';
-    //
-    // Radio button for is_verified
-    //
-    echo '<h2>Filters:</h2>';
-	echo '<div >';//container of radio
-	echo '  <em style=" display:inline-block; width:6em;">is_verified?</em>';
-
-	echo '    <label for="vany" class="radio-is_verified">';
-    $t1 = ($is_verified_chk == "any") ? "checked" : "";
-	echo '      <input id="vany" type="radio" name="is_verified_chk" value="any" '. $t1 .' >Any';
-	echo '    </label>';
-
-	echo '    <label for="vvalue_true" class="radio-is_verified">';
-    $t1 = ($is_verified_chk == "true") ? "checked" : "";
-	echo '      <input id="vvalue_true" type="radio" name="is_verified_chk" value="true" '.$t1.' >True';
-	echo '    </label>';
-
-	echo '    <label for="vvalue_false" class="radio-is_verified">';
-    $t1 = ($is_verified_chk == "false") ? "checked" : "";
-	echo '      <input id="vvalue_false" type="radio" name="is_verified_chk" value="false" '.$t1.'>False';
-	echo '    </label>';
-
-	echo '</div><br>';//container of radio
-
-	echo '<div >';//container of radio
-	echo '  <em style=" display:inline-block; width:6em;">is_SPAM?</em>';
-
-	echo '    <label for="sany" class="radio-is_spam">';
-    $t1 = ($is_spam_chk == "any") ? "checked" : "";
-	echo '      <input id="sany" type="radio" name="is_spam_chk" value="any" '. $t1 .' >Any';
-	echo '    </label>';
-
-	echo '    <label for="svalue_true" class="radio-is_spam">';
-    $t1 = ($is_spam_chk == "true") ? "checked" : "";
-	echo '      <input id="svalue_true" type="radio" name="is_spam_chk" value="true" '.$t1.' >True';
-	echo '    </label>';
-
-	echo '    <label for="svalue_false" class="radio-is_spam">';
-    $t1 = ($is_spam_chk == "false") ? "checked" : "";
-	echo '      <input id="svalue_false" type="radio" name="is_spam_chk" value="false" '.$t1.'>False';
-	echo '    </label>';
-
-	echo '</div><br>';//container of radio
-
-	echo '<div >';//container of radio
-	echo '  <em style=" display:inline-block; width:6em;">unsubscribed?</em>';
-
-	echo '    <label for="uany" class="radio-unsub">';
-    $t1 = ($is_unsub_chk == "any") ? "checked" : "";
-	echo '      <input id="uany" type="radio" name="is_unsub_chk" value="any" '. $t1 .' >Any';
-	echo '    </label>';
-
-	echo '    <label for="uvalue_true" class="radio-unsub">';
-    $t1 = ($is_unsub_chk == "true") ? "checked" : "";
-	echo '      <input id="uvalue_true" type="radio" name="is_unsub_chk" value="true" '.$t1.' >True';
-	echo '    </label>';
-
-	echo '    <label for="uvalue_false" class="radio-unsub">';
-    $t1 = ($is_unsub_chk == "false") ? "checked" : "";
-	echo '      <input id="uvalue_false" type="radio" name="is_unsub_chk" value="false" '.$t1.'>False';
-	echo '    </label>';
-
-	echo '</div><br>';//container of radio
-
-    echo '<label for="startdate" >Start Date for Mailing</label>';
-    echo '<input id="startdate" name="date_to_start" type="date" value="'.$start.'" >';
-
-    submit_button("Submit Mailing");
-    echo '</form>';
-
-    echo '</div>';
-}
-
 function wga_admin_options(){
     // Options menu
     if(!current_user_can('manage_options')) {
@@ -126,20 +17,12 @@ function wga_admin_options(){
 	                add_option( 'initialwelcomemessageid', $m_id );
                     //$filterrecords = sanitize_text_field($_POST["filterrecords"]);
                 }
-            }elseif ($_POST["submit"] == 'Create New Mailing') {
-                if (isset($_POST["wga_mailing_edit_id"])) {
-                    $id = $_POST['wga_mailing_edit_id'];
-                    wga_new_mailing($id);
-                }
-            }elseif ($_POST["submit"] == 'Submit Mailing') {
-                $id = $_POST['wga_mailing_edit_id'];
-                $mess_id = $_POST['mailing_message_id'];
-                $verified = $_POST['is_verified_chk'];
-                $spam = $_POST['is_spam_chk'];
-                $unsub = $_POST['is_unsub_chk'];
-                $start = $_POST['date_to_start'];
-                //$created = $_POST['wga_created'];
-                $mail_id = wga_insert_update_mailing($id, $mess_id, $verified, $spam, $unsub, $start);
+            }elseif ($_POST["submit"] == '&Create New Mailing') {
+                //if (isset($_POST["wga_mailing_edit_id"])) {
+                //    $id = $_POST['wga_mailing_edit_id'];
+                //    wga_new_mailing($id);
+	                WGA_Manage_Mailings::get_instance()->mailings_list_obj-> display_record_edit_form();
+                //}
             }elseif ($_POST["submit"] == 'Do Mailing') {
                 if (isset($_POST['mailing_id'])) {
                     $mailings_id = $_POST['mailing_id'];
@@ -180,8 +63,10 @@ function wga_admin_options(){
     if ($mail_id > 0) {
         echo "<h2 style='inline-block; background:#FFFF00; width:30%'> Mailing Created with id: $mail_id </h2>";
     }
-    echo '<form method="post">';
-    echo '<input name="wga_mailing_edit_id" type="hidden" value="-1">';
+    echo '<form method="POST">';
+	wp_nonce_field( 'sp_edit_mailings_record', '_wpnonce' );
+    echo '<input name="mailings_record" type="hidden" value="-1">';
+    echo '<input name="action" type="hidden" value="edit">';
     submit_button("Create New Mailing");
     echo '</form>';
 

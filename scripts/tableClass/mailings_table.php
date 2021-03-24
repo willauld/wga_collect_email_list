@@ -40,9 +40,117 @@ class WGA_Mailings_List extends WP_List_Table {
 	 *
 	 * @return mixed
 	 */
-	public static function display_record_edit_form($record){
-        // Call new_mailing -- assume $record is an id???? 
-        wga_new_mailing($record);
+	public static function display_record_edit_form($mailings_id = -1){
+		global $wpdb;
+	    //
+	    // Form for creating a "mailing"
+	    //
+	    if ($mailings_id <= 0) {
+	        // new mailings
+	        $is_verified_chk = "true";
+	        $is_spam_chk = "false";
+	        $is_unsub_chk = "false";
+	        $mailing_m_id = "";
+    		$start = current_time( 'mysql' );
+	    }else {
+	        // edit a mailing
+			$sql = "SELECT * FROM {$wpdb->prefix}wga_mailings_list WHERE mailings_id = $mailings_id";
+			$result = $wpdb->get_row( $sql );
+	
+	        if ($result){
+	            $mailing_m_id = $result->mailings_message_id;
+	            $is_verified_chk = $result->mailings_verified;
+	            $is_spam_chk = $result->mailings_spam;
+	            $is_unsub_chk = $result->mailings_unsubscribed;
+	            $start = $result->mailings_start_date;
+	            //$created = $result->mailings_created_at;
+	        }else{
+	            $mailing_m_id = -2;
+	        }
+	    }
+	
+	    echo '<div style="margin: 3em;  padding: 2em; border: 2px solid #262661; border-radius: 5px; width: 40%; " >';
+	
+	    echo '<form method="post">';
+
+	    //echo '<input name="wga_mailing_edit_id" type="hidden" value="'.$mailings_id.'">';
+	    echo '<input name="action" type="hidden" value="saveMailing">';
+	
+	    echo "<label for='messageid' >Message ID</label>";
+	    echo '<input id="messageid" name="mailing_message_id" type="number" value="'.$mailing_m_id.'" >';
+	    //
+	    // Radio button for is_verified
+	    //
+	    echo '<h2>Filters:</h2>';
+		echo '<div >';//container of radio
+		echo '  <em style=" display:inline-block; width:6em;">is_verified?</em>';
+	
+		echo '    <label for="vany" class="radio-is_verified">';
+	    $t1 = ($is_verified_chk == "any") ? "checked" : "";
+		echo '      <input id="vany" type="radio" name="is_verified_chk" value="any" '. $t1 .' >Any';
+		echo '    </label>';
+	
+		echo '    <label for="vvalue_true" class="radio-is_verified">';
+	    $t1 = ($is_verified_chk == "true") ? "checked" : "";
+		echo '      <input id="vvalue_true" type="radio" name="is_verified_chk" value="true" '.$t1.' >True';
+		echo '    </label>';
+	
+		echo '    <label for="vvalue_false" class="radio-is_verified">';
+	    $t1 = ($is_verified_chk == "false") ? "checked" : "";
+		echo '      <input id="vvalue_false" type="radio" name="is_verified_chk" value="false" '.$t1.'>False';
+		echo '    </label>';
+	
+		echo '</div><br>';//container of radio
+	
+		echo '<div >';//container of radio
+		echo '  <em style=" display:inline-block; width:6em;">is_SPAM?</em>';
+	
+		echo '    <label for="sany" class="radio-is_spam">';
+	    $t1 = ($is_spam_chk == "any") ? "checked" : "";
+		echo '      <input id="sany" type="radio" name="is_spam_chk" value="any" '. $t1 .' >Any';
+		echo '    </label>';
+	
+		echo '    <label for="svalue_true" class="radio-is_spam">';
+	    $t1 = ($is_spam_chk == "true") ? "checked" : "";
+		echo '      <input id="svalue_true" type="radio" name="is_spam_chk" value="true" '.$t1.' >True';
+		echo '    </label>';
+	
+		echo '    <label for="svalue_false" class="radio-is_spam">';
+	    $t1 = ($is_spam_chk == "false") ? "checked" : "";
+		echo '      <input id="svalue_false" type="radio" name="is_spam_chk" value="false" '.$t1.'>False';
+		echo '    </label>';
+	
+		echo '</div><br>';//container of radio
+	
+		echo '<div >';//container of radio
+		echo '  <em style=" display:inline-block; width:6em;">unsubscribed?</em>';
+	
+		echo '    <label for="uany" class="radio-unsub">';
+	    $t1 = ($is_unsub_chk == "any") ? "checked" : "";
+		echo '      <input id="uany" type="radio" name="is_unsub_chk" value="any" '. $t1 .' >Any';
+		echo '    </label>';
+	
+		echo '    <label for="uvalue_true" class="radio-unsub">';
+	    $t1 = ($is_unsub_chk == "true") ? "checked" : "";
+		echo '      <input id="uvalue_true" type="radio" name="is_unsub_chk" value="true" '.$t1.' >True';
+		echo '    </label>';
+	
+		echo '    <label for="uvalue_false" class="radio-unsub">';
+	    $t1 = ($is_unsub_chk == "false") ? "checked" : "";
+		echo '      <input id="uvalue_false" type="radio" name="is_unsub_chk" value="false" '.$t1.'>False';
+		echo '    </label>';
+	
+		echo '</div><br>';//container of radio
+	
+	    echo '<label for="startdate" >Start Date for Mailing</label>';
+	    $start2 = date("Y-m-d", strtotime($start));
+	    echo '<input id="startdate" name="date_to_start" type="date" value="'.$start2.'" >';
+	
+	    submit_button("Submit Mailing");
+	    submit_button("Cancel"); //FIXME
+	    echo '</form>';
+	
+	    echo '</div>';
     }
 
 	/**
@@ -106,22 +214,49 @@ class WGA_Mailings_List extends WP_List_Table {
 	 *
 	 * @param int $id mailings ID
 	 */
-	public function edit_update_mailings_record( $id, $messid, $verify, $spam, $unsub, $start, $sent_to, $complete ) {
-		global $wpdb;
-		$wpdb->update(
-			"{$wpdb->prefix}wga_contact_list",
-            [ 
-                'mailings_message_id' => $messid,
-                'mailings_verified' => $verify,
-                'mailings_spam' => $spam,
-                'mailings_unsubscribed' => $unsub,
-                'mailings_start_date' => $start,
-				'mailings_updated_at' => current_time( 'mysql' ),
-                'mailings_sent_to' => $sent_to,
-                'mailings_completed' => $complete,
-            ],
-			[ 'mailings_id' => $id ]
-		);
+	//function wga_insert_update_mailing($id, $mess_id, $verified, $spam, $unsub, $start)
+	public function edit_update_mailings_record($id, $mess_id, $verified, $spam, $unsub, $start) {
+	    global $wpdb;
+	
+	    //echo 'INSERTING new record with no mailings_id yet';
+	    $now = current_time( 'mysql' );
+		$table_name = $wpdb->prefix . 'wga_mailings_list';
+	    if ($id <= 0) {
+			$result = $wpdb->insert( 
+				$table_name, 
+				array( 
+				    'mailings_message_id' => $mess_id,
+		            'mailings_verified' => $verified,
+		            'mailings_spam' => $spam,
+		            'mailings_unsubscribed' => $unsub,
+		            'mailings_start_date' =>  $start,
+				    'mailings_created_at' =>  $now, 
+				) 
+		    );
+	        if ($result) {
+	            $sql_cmd = $wpdb->prepare("SELECT mailings_id FROM {$wpdb->prefix}wga_mailings_list WHERE (mailings_message_id = %s AND mailings_start_date = %s AND mailings_created_at = %s)", $mess_id, $start, $now);
+	            $results = $wpdb->get_results( $sql_cmd );
+	            $result = $results[0]->mailings_id;
+	        }
+	    } else {
+	        // update
+			$rep = $wpdb->update(
+				"{$wpdb->prefix}wga_mailings_list",
+				array( // data
+				    'mailings_message_id' => $mess_id,
+		            'mailings_verified' => $verified,
+		            'mailings_spam' => $spam,
+		            'mailings_unsubscribed' => $unsub,
+		            'mailings_start_date' =>  $start,
+				    'mailings_updated_at' =>  $now, 
+				),
+				array( //where
+					'mailings_id' => $id,
+				)
+	        );
+	        $result = $id;
+	    }
+	    return $result;
 	}
 
 	/**
@@ -316,7 +451,7 @@ class WGA_Mailings_List extends WP_List_Table {
 	public function process_bulk_action() {
 		//Detect when a bulk action is being triggered...
 				
-        /*
+        /**/ 
         echo '<pre>';
         echo '<h2> $_REQUEST() </h2>';
         print_r($_REQUEST);
@@ -324,7 +459,7 @@ class WGA_Mailings_List extends WP_List_Table {
         print_r($_GET);
 	    print_r($this->current_action());
         echo '</pre>';
-        */
+        /**/
 
 		if ( 'edit' === $this->current_action() ) {
 			// In our file that handles the request, verify the nonce.
@@ -333,12 +468,35 @@ class WGA_Mailings_List extends WP_List_Table {
 				die( 'Go get a life script kiddies' );
 			}
 			else {
-				$record_id = absint( $_GET['mailings_record'] ) ;
+				$record_id = $_REQUEST['mailings_record'];
 				//$record = self::get_mailings_record( $record_id );
                 //echo 'id: '.$record->id;
                 self::display_record_edit_form($record_id);
 			}
             // SAVE operation is handled by on-page php code.
+        }elseif ( 'saveMailing' === $this->current_action() ) {
+            if ($_POST["submit"] == 'Submit Mailing') {
+				if ( !empty($_REQUEST['mailings_record']) &&
+                isset($_REQUEST['mailings_record']) ) {
+                	$id = $_REQUEST['mailings_record'];
+				}else{
+					$id = -1;
+				}
+                $mess_id = $_POST['mailing_message_id'];
+                $verified = $_POST['is_verified_chk'];
+                $spam = $_POST['is_spam_chk'];
+                $unsub = $_POST['is_unsub_chk'];
+                $start = $_POST['date_to_start'];
+                //$created = $_POST['wga_created'];
+                //$mail_id = wga_insert_update_mailing($id, $mess_id, $verified, $spam, $unsub, $start); // FIXME move this function into the class
+				$mail_id = $this->edit_update_mailings_record($id, $mess_id, $verified, $spam, $unsub, $start);
+			} // else do nothing if "cancel" button
+			/* trying to get rid of the url get strings
+			nocache_headers();
+			$url = site_url(). '/' . esc_url( $_SERVER['REQUEST_URI'] );//.'/#comboform"
+			wp_safe_redirect( $url );
+			exit;
+			*/
         }elseif ( 'delete' === $this->current_action() ) {
 			// In our file that handles the request, verify the nonce.
 			$nonce = esc_attr( $_REQUEST['_wpnonce'] );
