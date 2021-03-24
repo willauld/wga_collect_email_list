@@ -1,18 +1,38 @@
 <?php
 
-function wga_new_mailing($mailing_m_id = "") {
+function wga_new_mailing($mailings_id = -1) {
+	global $wpdb;
     //
     // Form for creating a "mailing"
     //
-    if (!isset($is_verified_chk)) {
+    if ($mailings_id <= 0) {
+        // new mailings
         $is_verified_chk = "true";
         $is_spam_chk = "false";
         $is_unsub_chk = "false";
+        $mailing_m_id = "";
+    }else {
+        // edit a mailing
+		$sql = "SELECT * FROM {$wpdb->prefix}wga_mailings_list WHERE mailings_id = $mailings_id";
+		$result = $wpdb->get_row( $sql );
+
+        if ($result){
+            $mailing_m_id = $result->mailings_message_id;
+            $is_verified_chk = $result->mailings_verified;
+            $is_spam_chk = $result->mailings_spam;
+            $is_unsub_chk = $result->mailings_unsubscribed;
+            $start = $result->mailings_start_date;
+            //$created = $result->mailings_created_at;
+        }else{
+            $mailing_m_id = -2;
+        }
     }
 
     echo '<div style="margin: 3em;  padding: 2em; border: 2px solid #262661; border-radius: 5px; width: 40%; " >';
 
     echo '<form method="post">';
+    echo '<input name="wga_mailing_edit_id" type="hidden" value="'.$mailings_id.'">';
+    //echo '<input name="wga_created" type="hidden" value="'.$created.'">';
 
     echo '<label for="messageid" >Message ID</label>';
     echo '<input id="messageid" name="mailing_message_id" type="number" value="'.$mailing_m_id.'" >';
@@ -81,7 +101,7 @@ function wga_new_mailing($mailing_m_id = "") {
 	echo '</div><br>';//container of radio
 
     echo '<label for="startdate" >Start Date for Mailing</label>';
-    echo '<input id="startdate" name="date_to_start" type="date" value="" >';
+    echo '<input id="startdate" name="date_to_start" type="date" value="'.$start.'" >';
 
     submit_button("Submit Mailing");
     echo '</form>';
@@ -107,14 +127,19 @@ function wga_admin_options(){
                     //$filterrecords = sanitize_text_field($_POST["filterrecords"]);
                 }
             }elseif ($_POST["submit"] == 'Create New Mailing') {
-                wga_new_mailing();
+                if (isset($_POST["wga_mailing_edit_id"])) {
+                    $id = $_POST['wga_mailing_edit_id'];
+                    wga_new_mailing($id);
+                }
             }elseif ($_POST["submit"] == 'Submit Mailing') {
+                $id = $_POST['wga_mailing_edit_id'];
                 $mess_id = $_POST['mailing_message_id'];
                 $verified = $_POST['is_verified_chk'];
                 $spam = $_POST['is_spam_chk'];
                 $unsub = $_POST['is_unsub_chk'];
                 $start = $_POST['date_to_start'];
-                $mail_id = wga_insert_mailing($mess_id, $verified, $spam, $unsub, $start);
+                //$created = $_POST['wga_created'];
+                $mail_id = wga_insert_update_mailing($id, $mess_id, $verified, $spam, $unsub, $start);
             }elseif ($_POST["submit"] == 'Do Mailing') {
                 if (isset($_POST['mailing_id'])) {
                     $mailings_id = $_POST['mailing_id'];
@@ -156,6 +181,7 @@ function wga_admin_options(){
         echo "<h2 style='inline-block; background:#FFFF00; width:30%'> Mailing Created with id: $mail_id </h2>";
     }
     echo '<form method="post">';
+    echo '<input name="wga_mailing_edit_id" type="hidden" value="-1">';
     submit_button("Create New Mailing");
     echo '</form>';
 
@@ -623,27 +649,46 @@ function wga_update_message($id, $subject, $content) {
     return false;
 }
 
-function wga_insert_mailing($mess_id, $verified, $spam, $unsub, $start) {
+function wga_insert_update_mailing($id, $mess_id, $verified, $spam, $unsub, $start) {
     global $wpdb;
 
     //echo 'INSERTING new record with no mailings_id yet';
     $now = current_time( 'mysql' );
 	$table_name = $wpdb->prefix . 'wga_mailings_list';
-	$result = $wpdb->insert( 
-		$table_name, 
-		array( 
-		    'mailings_message_id' => $mess_id,
-            'mailings_verified' => $verified,
-            'mailings_spam' => $spam,
-            'mailings_unsubscribed' => $unsub,
-            'mailings_start_date' =>  $start,
-		    'mailings_created_at' =>  $now, 
-		) 
-    );
-    if ($result) {
-        $sql_cmd = $wpdb->prepare("SELECT mailings_id FROM {$wpdb->prefix}wga_mailings_list WHERE (mailings_message_id = %s AND mailings_start_date = %s AND mailings_created_at = %s)", $mess_id, $start, $now);
-        $results = $wpdb->get_results( $sql_cmd );
-        $result = $results[0]->mailings_id;
+    if ($id <= 0) {
+		$result = $wpdb->insert( 
+			$table_name, 
+			array( 
+			    'mailings_message_id' => $mess_id,
+	            'mailings_verified' => $verified,
+	            'mailings_spam' => $spam,
+	            'mailings_unsubscribed' => $unsub,
+	            'mailings_start_date' =>  $start,
+			    'mailings_created_at' =>  $now, 
+			) 
+	    );
+        if ($result) {
+            $sql_cmd = $wpdb->prepare("SELECT mailings_id FROM {$wpdb->prefix}wga_mailings_list WHERE (mailings_message_id = %s AND mailings_start_date = %s AND mailings_created_at = %s)", $mess_id, $start, $now);
+            $results = $wpdb->get_results( $sql_cmd );
+            $result = $results[0]->mailings_id;
+        }
+    } else {
+        // update
+		$rep = $wpdb->update(
+			"{$wpdb->prefix}wga_mailings_list",
+			array( // data
+			    'mailings_message_id' => $mess_id,
+	            'mailings_verified' => $verified,
+	            'mailings_spam' => $spam,
+	            'mailings_unsubscribed' => $unsub,
+	            'mailings_start_date' =>  $start,
+			    'mailings_updated_at' =>  $now, 
+			),
+			array( //where
+				'mailings_id' => $id,
+			)
+        );
+        $result = $id;
     }
     return $result;
 }
