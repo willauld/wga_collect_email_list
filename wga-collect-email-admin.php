@@ -21,10 +21,10 @@ function wga_admin_mailings(){
             }
         }
     }
-    */
     echo '<pre>';
     print_r($_REQUEST);
     echo '</pre>';
+    */
 
 	echo '<div class="wrap">';
 	echo '	<h2>Welcome To Mailings page</h2>';
@@ -930,9 +930,11 @@ function wga_admin_messages() {
 
     echo '<h1> Message page </h1>';
 
+    /*
     echo '<pre>';
     print_r($_REQUEST);
     echo '</pre>';
+    */
     //
     // Set Message for Inital Welcome email
     //

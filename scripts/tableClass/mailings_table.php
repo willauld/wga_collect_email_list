@@ -442,7 +442,7 @@ class WGA_Mailings_List extends WP_List_Table {
 	public function process_bulk_action() {
 		//Detect when a bulk action is being triggered...
 				
-        /**/ 
+        /* 
         echo '<pre>';
         echo '<h2> $_REQUEST() </h2>';
         print_r($_REQUEST);
@@ -450,7 +450,7 @@ class WGA_Mailings_List extends WP_List_Table {
         print_r($_GET);
 	    print_r($this->current_action());
         echo '</pre>';
-        /**/
+        */
 
 		if ( 'edit' === $this->current_action() && empty($_REQUEST['paged'])) {
 			// In our file that handles the request, verify the nonce.

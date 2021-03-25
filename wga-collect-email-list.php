@@ -93,7 +93,7 @@ add_action('admin_menu', 'wga_plugin_setup_menu');
 
 function wga_plugin_setup_menu(){
 
-    add_menu_page( 'WGA Email', 'WGA Email', 'manage_options', basename(__FILE__), 'wga_admin_options', 'dashicons-tickets', 66 );
+    add_menu_page( 'WGA Email', 'WGA Email', 'manage_options', basename(__FILE__), 'wga_admin_mailings', 'dashicons-tickets', 66 );
 
 	if(function_exists('add_submenu_page')){
 		$mailings_page_hook = add_submenu_page(basename(__FILE__), 'Mailings', 'Mailings', 'manage_options', basename(__FILE__), 'wga_admin_mailings');
@@ -255,9 +255,8 @@ function get_email_list() {
 		UNIQUE KEY id (id)
 		*/
 	global $wpdb;
-	$get_all = $wpdb->prepare(
-		"SELECT * FROM {$wpdb->prefix}wga_contact_list" 
-	);
+	//$get_all = $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}wga_contact_list" );
+	$get_all = "SELECT * FROM {$wpdb->prefix}wga_contact_list";
     $results = $wpdb->get_results( $get_all );
 
 	$list = array();
