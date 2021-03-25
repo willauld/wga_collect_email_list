@@ -57,14 +57,6 @@ function wga_admin_options(){
     submit_button("Assign new message id for the Initial Welcome");
     echo '</form>';
 
-    // 
-    // Test button for clearing get/post info
-    //
-    echo "SITE_URL: ".site_url().PHP_EOL;
-	echo "REQ_URI:  ".esc_url( $_SERVER['REQUEST_URI'] );
-	echo '<form action="/' . esc_url( $_SERVER['REQUEST_URI'] ).'" method="get">';
-    submit_button("test - clear info");
-    echo '</form>';
     //
     // Create new "mailing"
     //

@@ -69,8 +69,11 @@ class WGA_Mailings_List extends WP_List_Table {
 	        }
 	    }
 	
-	    echo '<div style="margin: 3em;  padding: 2em; border: 2px solid #262661; border-radius: 5px; width: 40%; " >';
-	
+	    echo '<div style="margin: 3em;  padding: 2em; border: 2px solid #262661; border-radius: 5px; width: 50%; " >';
+
+		$midstr = $mailings_id<=0?"TBD":$mailings_id;
+		echo '<h2>Mailings ID: '.$midstr.'</h2>';
+
 	    echo '<form method="post">';
 
 	    //echo '<input name="wga_mailing_edit_id" type="hidden" value="'.$mailings_id.'">';
@@ -380,21 +383,7 @@ class WGA_Mailings_List extends WP_List_Table {
 	 * Columns to make sortable.
 	 *
 	 * @return array
-     * 
-     * FIXME NEEDS TO BE CUSTOMIZED FOR MAILINGS
 	 */
-        /*
-		mailings_id int(10) NOT NULL AUTO_INCREMENT,
-		mailings_message_id int(10),
-        mailings_verified varchar(6),
-        mailings_spam varchar(6),
-        mailings_unsubscribed varchar(6),
-        mailings_start_date datetime NOT NULL,
-		mailings_created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-		mailings_updated_at datetime,
-        mailings_sent_to longtext, 
-        mailings_completed tinyint(1) DEFAULT 0,
-        */
 	public function get_sortable_columns() {
 		$sortable_columns = array(
 			'id' => array( 'mailings_id', true ),
@@ -461,7 +450,7 @@ class WGA_Mailings_List extends WP_List_Table {
         echo '</pre>';
         /**/
 
-		if ( 'edit' === $this->current_action() ) {
+		if ( 'edit' === $this->current_action() && empty($_REQUEST['paged'])) {
 			// In our file that handles the request, verify the nonce.
 			$nonce = esc_attr( $_REQUEST['_wpnonce'] );
 			if ( ! wp_verify_nonce( $nonce, 'sp_edit_mailings_record' ) ) {
