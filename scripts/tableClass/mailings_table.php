@@ -492,6 +492,9 @@ class WGA_Mailings_List extends WP_List_Table {
 				$mail_id = $this->edit_update_mailings_record($id, $mess_id, $verified, $spam, $unsub, $start);
 			} // else do nothing if "cancel" button
 			/* trying to get rid of the url get strings
+            notecho '<script type="text/javascript">
+                    location.reload();
+                </script>';
 			nocache_headers();
 			$url = site_url(). '/' . esc_url( $_SERVER['REQUEST_URI'] );//.'/#comboform"
 			wp_safe_redirect( $url );
