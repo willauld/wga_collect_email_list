@@ -6,9 +6,10 @@ function wga_admin_options(){
 	    die('Access Denied');
     }
 
-	$m_id = get_option( 'initialwelcomemessageid' );
+	//$m_id = get_option( 'initialwelcomemessageid' );
     $mail_id = -1;
 
+    /*
 	if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	    if (!empty($_POST["submit"])) {
             if ($_POST["submit"] == 'Assign new message id for the Initial Welcome') {
@@ -17,25 +18,12 @@ function wga_admin_options(){
 	                add_option( 'initialwelcomemessageid', $m_id );
                     //$filterrecords = sanitize_text_field($_POST["filterrecords"]);
                 }
-            }elseif ($_POST["submit"] == '&Create New Mailing') {
-                //if (isset($_POST["wga_mailing_edit_id"])) {
-                //    $id = $_POST['wga_mailing_edit_id'];
-                //    wga_new_mailing($id);
-	                WGA_Manage_Mailings::get_instance()->mailings_list_obj-> display_record_edit_form();
-                //}
-            }elseif ($_POST["submit"] == 'Do Mailing') {
-                if (isset($_POST['mailing_id'])) {
-                    $mailings_id = $_POST['mailing_id'];
-                    $str = wga_send_mailings_email($mailings_id);
-                }
             }
         }
     }
+    */
     echo '<pre>';
     print_r($_REQUEST);
-    if (isset($str)) {
-        print_r($str);
-    }
     echo '</pre>';
 
 	echo '<div class="wrap">';
@@ -48,6 +36,7 @@ function wga_admin_options(){
     //
 	WGA_Manage_Mailings::get_instance()->wga_plugin_settings_page();
 
+    /*
     //
     // Set Message for Inital Welcome email
     //
@@ -56,6 +45,7 @@ function wga_admin_options(){
     echo '<input id="initialwelcome" name="initwelcome" type="number" value="'.$m_id.'" >';
     submit_button("Assign new message id for the Initial Welcome");
     echo '</form>';
+    */
 
     //
     // Create new "mailing"
@@ -70,6 +60,7 @@ function wga_admin_options(){
     submit_button("Create New Mailing");
     echo '</form>';
 
+    /*
     //
     // Do mailing for mailing id
     //
@@ -78,7 +69,6 @@ function wga_admin_options(){
     echo '<input id="mailingid" name="mailing_id" type="number" >';
     submit_button("Do Mailing");
     echo '</form>';
-    /*
     $my_ob_level = ob_get_level();
     $my_ob_content = ob_get_contents();
     echo '<h1> buffering level is: '.$my_ob_level.'</h1>';
@@ -735,6 +725,11 @@ function wga_send_mailings_email($mailings_id) {
     $sql_cmd1 = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}wga_message_list WHERE (message_id = %d)", $m_id);
     $mresults = $wpdb->get_results( $sql_cmd1 );
 
+    if (!$mresults) {
+        $err_msg .= "<h2>Message id: ".$m_id." is not present.</h2>";
+        return $err_msg;
+    }
+
     $subject = stripslashes($mresults[0]->message_subject);
     $content = stripslashes($mresults[0]->message_content);
 
@@ -853,6 +848,7 @@ function wga_send_mailings_email($mailings_id) {
 
 function wga_admin_messages() {
     $m_id = -1;
+    $im_id = -1;
     $m_saved = 0;
     $edit_id = -1;
     $ErrStr = '';
@@ -864,6 +860,7 @@ function wga_admin_messages() {
     $editor_content = "";
     $editor_subject = "";
     $have_title = $have_content = 0;
+	$im_id = get_option( 'initialwelcomemessageid' );
 
 	if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	    if (!empty($_POST["wga_message_id"])) {
@@ -883,7 +880,13 @@ function wga_admin_messages() {
             $edit_id = $_POST['wga_edit_id'];
         }
         if (!empty($_POST['submit'])) {
-            if ($_POST['submit']=='Save content'){
+            if ($_POST["submit"] == 'Assign new message id for the Initial Welcome') {
+	            if (!empty($_POST["initwelcome"])) {
+	                $im_id = $_POST["initwelcome"] ;
+                    echo "<h1>assigning $im_id to initial welcome </h1>";
+	                update_option( 'initialwelcomemessageid', $im_id );
+                }
+            } elseif ($_POST['submit']=='Save content'){
                 if ($have_title != 1) {
                     $ErrStr = 'To Save the content you must first give it a subject.';
                 }else{
@@ -930,16 +933,13 @@ function wga_admin_messages() {
     echo '<pre>';
     print_r($_REQUEST);
     echo '</pre>';
-    // 
-    // edit new message
+    //
+    // Set Message for Inital Welcome email
     //
     echo '<form method="post">';
-    echo '<div >';
-    echo '<div style="display: inline-block"> ';
-    echo '<input name="wga_edit_id" id="m_id" type="hidden" value="-1">';
-	submit_button( 'Edit new message' );
-    echo '</div>';
-    echo '</div>';
+    echo '<label for="initialwelcome" >Initial Welcome Message ID</label>';
+    echo '<input id="initialwelcome" name="initwelcome" type="number" value="'.$im_id.'" >';
+    submit_button("Assign new message id for the Initial Welcome");
     echo '</form>';
 
     //
@@ -949,7 +949,6 @@ function wga_admin_messages() {
     echo 'tr:nth-child(even){background-color: lightblue}';
     echo '</style>';
 	WGA_Messages::get_instance()->wga_plugin_settings_page();
-
 
     if (!empty($_GET['message']) && (!empty($_GET['action']) && $_GET['action']=='edit')) {
         // message list table normally would process 'edit' and its nonce 

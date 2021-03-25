@@ -342,12 +342,14 @@ class WGA_Mailings_List extends WP_List_Table {
 	function column_id( $item ) {
 
 		$edit_nonce = wp_create_nonce( 'sp_edit_mailings_record' );
+		$domailing_nonce = wp_create_nonce( 'sp_do_mailings_record' );
 		$delete_nonce = wp_create_nonce( 'sp_delete_mailings_record' );
 
 		$title = '<strong>' . $item['mailings_id'] . '</strong>';
 
 		$actions = [
             'edit' => sprintf( '<a href="?page=%s&action=%s&mailings_record=%s&_wpnonce=%s">Edit</a>', esc_attr( $_REQUEST['page'] ), 'edit', absint( $item['mailings_id'] ), $edit_nonce ),
+            'domailing' => sprintf( '<a href="?page=%s&action=%s&mailings_record=%s&_wpnonce=%s">Do Mailing</a>', esc_attr( $_REQUEST['page'] ), 'domailing', absint( $item['mailings_id'] ), $domailing_nonce ),
 			'delete' => sprintf( '<a href="?page=%s&action=%s&mailings_record=%s&_wpnonce=%s">Delete</a>', esc_attr( $_REQUEST['page'] ), 'delete', absint( $item['mailings_id'] ), $delete_nonce ),
 		];
 
@@ -489,6 +491,20 @@ class WGA_Mailings_List extends WP_List_Table {
 			wp_safe_redirect( $url );
 			exit;
 			*/
+        }elseif ( 'domailing' === $this->current_action() ) {
+			// process the mailings record by sending an email with the specified 
+			// message to every email in the contact_list that matches the filters.
+			// First verify the nonce.
+			$nonce = esc_attr( $_REQUEST['_wpnonce'] );
+			if ( ! wp_verify_nonce( $nonce, 'sp_do_mailings_record' ) ) {
+				die( 'Go get a life script kiddies' );
+			} else {
+				$record_id = $_REQUEST['mailings_record'];
+				echo 'ready to call domailing for record '.$record_id;
+				// FIXME will want to make this function part of the class
+            	$str = wga_send_mailings_email($record_id);
+				print_r($str);
+			}
         }elseif ( 'delete' === $this->current_action() ) {
 			// In our file that handles the request, verify the nonce.
 			$nonce = esc_attr( $_REQUEST['_wpnonce'] );
