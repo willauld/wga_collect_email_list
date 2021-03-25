@@ -96,7 +96,7 @@ function wga_plugin_setup_menu(){
     add_menu_page( 'WGA Email', 'WGA Email', 'manage_options', basename(__FILE__), 'wga_admin_options', 'dashicons-tickets', 66 );
 
 	if(function_exists('add_submenu_page')){
-		$mailings_page_hook = add_submenu_page(basename(__FILE__), 'Options', 'Options', 'manage_options', basename(__FILE__), 'wga_admin_options');
+		$mailings_page_hook = add_submenu_page(basename(__FILE__), 'Mailings', 'Mailings', 'manage_options', basename(__FILE__), 'wga_admin_mailings');
 		$email_page_hook = add_submenu_page(basename(__FILE__), 'Manage', 'Manage',  'manage_options', 'Management', 'wga_admin_manage');
 		$message_page_hook = add_submenu_page(basename(__FILE__), 'Messages', 'Messages',  'manage_options', 'Messages', 'wga_admin_messages');
 

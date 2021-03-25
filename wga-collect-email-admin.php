@@ -1,6 +1,6 @@
 <?php
 
-function wga_admin_options(){
+function wga_admin_mailings(){
     // Options menu
     if(!current_user_can('manage_options')) {
 	    die('Access Denied');
@@ -27,7 +27,7 @@ function wga_admin_options(){
     echo '</pre>';
 
 	echo '<div class="wrap">';
-	echo '	<h2>Welcome To My Options & Mailings page</h2>';
+	echo '	<h2>Welcome To Mailings page</h2>';
 	echo '</div>';
     echo '<br><br>';
 
