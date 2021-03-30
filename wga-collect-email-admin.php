@@ -833,7 +833,7 @@ function wga_send_mailings_email($mailings_id) {
 		$headers .= "Content-type: text/html\r\n";
 	
 		// original: $email_response = wp_mail( $to, $subject, $message, $headers );
-		$email_response = wp_mail( $to, $subject, $message, $headers );
+		$email_response = mail( $to, $subject, $message, $headers );
         if (!$email_response) {
             // Error, something went wrong, tell someone, some how
             $err_msg .=  "<h2>&& $to failed &&</h2>";
