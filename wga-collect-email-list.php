@@ -170,9 +170,7 @@ function wga_db_table_install() {
 		// Table was not created !!
 		wp_die(
 			'<p>' .
-			sprintf( 
-			    __( $dbdelta_result ) 
-				) .
+			sprintf( $dbdelta_result) .
 			sprintf(
 				__( 'This plugin can not be activated because Message TABLE CREATION FAILED.', 'wga_collect_email_list' )
 			)
@@ -320,11 +318,12 @@ function wga_html_form_code($inpopup, $contact_form) {
 	global $wpdb;
 
 	/* define variables and set to empty values */
-	$nameErr = $emailErr = "";
+	$nameErr = $emailErr = $captchaErr = "";
     $name = $email = "";
     $input_message = "";
     $remember = 0;
 	$was_remembered = 0;
+    $g_recaptcha_response = "";
     
     //echo __LINE__.":: contact_form: $contact_form remember: $remember\n";
     //if ($contact_form==0) {
@@ -349,6 +348,12 @@ function wga_html_form_code($inpopup, $contact_form) {
 	//
 	// set for use in or out of a plugin
 	//
+
+    //echo '<pre>'; print_r($_REQUEST); echo '</pre>';
+
+    require_once('config.php');	
+    echo '<script src="https://www.google.com/recaptcha/api.js?render='.$reCAPTCHA_site_key.'"></script>';
+
 	if (($_SERVER["REQUEST_METHOD"] == "POST") and (empty($_POST['cf-post_handled'])))
 	{
 	  if (empty($_POST["cf-name"])) {
@@ -370,11 +375,9 @@ function wga_html_form_code($inpopup, $contact_form) {
 			$was_remembered = 0;
 		}
       }
-
       if (!empty($_POST["cf-text"])) {
           $input_message = wga_test_input($_POST["cf-text"]);
       }
-  
 	  if (empty($_POST["cf-email"])) {
 	    $emailErr = "Email is required";
 	  } else {
@@ -390,7 +393,32 @@ function wga_html_form_code($inpopup, $contact_form) {
 			}
 		}
 	  }
-	  if ($nameErr == "" and $emailErr == "") {
+      if (!empty($_POST["gRecaptchaResponse"])) {
+          $g_recaptcha_response = wga_test_input($_POST["gRecaptchaResponse"]);
+      }
+      $ip = $_SERVER['REMOTE_ADDR'];
+      $url =  'https://www.google.com/recaptcha/api/siteverify?secret=' . urlencode($reCAPTCHA_secret_key) . '&response=' . urlencode($g_recaptcha_response) . '&remoteip=' . urlencode($ip);
+      $response = file_get_contents($url);
+      $responseKeys = json_decode($response, true);
+
+      if ($responseKeys["success"] && $responseKeys["action"] == 'contactForm') {
+            if ($responseKeys["score"] < $g_recaptcha_allowable_score) {
+	            $captchaErr = "Google recaptcha failed, please try again";
+                //failed spam test. Offer the visitor the option to try again or use an alternative method of contact.
+            }else{ // score > 0.5
+	            //$captchaErr = "Google recaptcha SUCCEEDED";
+            }
+      } elseif($responseKeys["error-codes"]) { //optional
+	        $captchaErr = "FIXME error-codes not implemented";
+            //handle errors. See notes at:
+            //https://stackoverflow.com/questions/50405977/how-to-verify-google-recaptcha-v3-response/57202461#57202461
+            // for some thoughts and codes to handle
+            //(I handle errors by sending myself an email with the error code for debugging and offering the visitor the option to try again or use an alternative method of contact)
+      } else {
+	        $captchaErr = "unknow error, please try again";
+            //unkown screw up. Again, offer the visitor the option to try again or use an alternative method of contact.
+      }
+	  if ($nameErr == "" and $emailErr == "" and $captchaErr == "") {
 		  
 		//
 		// No errors, clear the fields, email?, Database? HERE
@@ -415,7 +443,7 @@ function wga_html_form_code($inpopup, $contact_form) {
 		echo '</script>'.PHP_EOL;
       }
 	}
-	
+
     //
 	// form execution
 	//
@@ -482,7 +510,7 @@ function wga_html_form_code($inpopup, $contact_form) {
         echo '</style>'.PHP_EOL;
 
         echo '<a id="comboform"/><br></a>'.PHP_EOL;
-	    echo '<form action="'.site_url(). '/' . esc_url( $_SERVER['REQUEST_URI'] ) . '/#comboform" method="post">'.PHP_EOL;
+	    echo '<form id="contactForm" action="'.site_url(). '/' . esc_url( $_SERVER['REQUEST_URI'] ) . '/#comboform" method="post">'.PHP_EOL;
 		if ($inpopup == 0) {
 			echo '  <fieldset id="pinfo">'.PHP_EOL;
 			if (!empty($_POST['cf-post_handled']))  {
@@ -520,13 +548,32 @@ function wga_html_form_code($inpopup, $contact_form) {
 		echo '		<p><label class="reg_label" for="text">Message: </label>'.PHP_EOL;
 		echo '		<textarea name="cf-text" id="text" cols="20" rows="10" >'.$input_message.'</textarea>'.PHP_EOL;
 		echo '		</p>'.PHP_EOL;
+        echo '      <input type="hidden" id="gRecaptchaResponse" name="gRecaptchaResponse">';
 		}
 		echo '	  </fieldset>'.PHP_EOL;
+		echo '        <span class="error"> ' . $captchaErr . '</span>'.PHP_EOL;
 		echo '    <input type="submit" name="cf-submitted" value="Submit">'.PHP_EOL;
 		if ($inpopup == 0) {
 			echo '  </fieldset>'.PHP_EOL;
 		}
 		echo '</form>'.PHP_EOL;
+        ?>
+        <script>
+            contactForm.addEventListener('submit', event => {
+                            event.preventDefault()
+                        	getRecaptchaToken(contactForm)
+                        });
+			function getRecaptchaToken(form) {
+			    grecaptcha.ready(function() {
+			        grecaptcha.execute(<?php echo "'".$reCAPTCHA_site_key."'"; ?>, {action: 'contactForm'}).then(function(token) {
+			            //gRecaptchaResponse.value = token //set the value of the hidden field
+                        document.getElementById('gRecaptchaResponse').value = token;
+			            form.submit() //submit the form
+			        });
+			    });
+			}
+        </script>
+<?php
 		
 	}
 	/*
