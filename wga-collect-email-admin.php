@@ -828,7 +828,7 @@ function wga_send_mailings_email($mailings_id) {
 		//$headers = "From: $name <$email>" . "\r\n";
 		$headers = "From: OregonOpenPrimaries.org <info@OregonOpenPrimaries.org> \r\n";
 		//$headers .= "Cc:OregonOpenPrimaries.org <info@OregonOpenPrimaries.org> \r\n";
-		$headers .= "Cc:".get_option( 'admin_email' )." \r\n";
+		$headers .= "BCc:".get_option( 'admin_email' )." \r\n";
 		$headers .= "MIME-Version: 1.0\r\n";
 		$headers .= "Content-type: text/html\r\n";
 	
