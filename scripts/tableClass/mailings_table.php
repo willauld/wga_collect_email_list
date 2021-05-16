@@ -198,7 +198,7 @@ class WGA_Mailings_List extends WP_List_Table {
 	}
 
 	/**
-	 * Delete an email record.
+	 * Delete a mailings record.
 	 *
 	 * @param int $id customer ID
 	 */
