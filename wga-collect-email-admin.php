@@ -771,6 +771,19 @@ function wga_send_mailings_email($mailings_id) {
 	    $first_name = $contact->first_name;
 	    $last_name = $contact->last_name;
 	    $email = $contact->email;
+
+        // Substitute db values for content macros
+        $search = array();
+        $replace = array();
+        foreach($contact as $col => $val) {
+            $search[] = "$$".$col."$$";
+            $replace[] = $val;
+            //echo "<h2> $col => $val </h2>";
+        }
+        foreach($search as $key => $val) {
+            echo "<h2> search[$key]: $val </h2>";
+        }
+        $new_content = str_replace($search, $replace, $content);
 	
 	    $message = '<html>
 	                    <head>
@@ -780,7 +793,7 @@ function wga_send_mailings_email($mailings_id) {
 	                    <body>
 	                        <img width="600" src="'.site_url().'/wp-content/uploads/2020/12/LogoOregonOpenPrimaries.png" alt="Let ALL voters vote!"/><br><br>
 	                        <br><br>
-	                        '.$content.'
+	                        '.$new_content.'
 	                    </body>
 	                </html>';
 		// get the blog administrator's email address
