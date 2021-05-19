@@ -784,6 +784,7 @@ function wga_send_mailings_email($mailings_id) {
         $replace[] = site_url();
         //foreach($search as $key => $val) { echo "<h2> search[$key]: $val </h2>"; }
         $new_content = str_replace($search, $replace, $content);
+        $new_subject = str_replace($search, $replace, $subject);
 	
 	    $message = '<html>
 	                    <head>
@@ -845,14 +846,12 @@ function wga_send_mailings_email($mailings_id) {
 		$headers .= "MIME-Version: 1.0\r\n";
 		$headers .= "Content-type: text/html\r\n";
 	
-		// original: $email_response = wp_mail( $to, $subject, $message, $headers );
-		$email_response = mail( $to, $subject, $message, $headers );
+		$email_response = mail( $to, $new_subject, $message, $headers );
         if (!$email_response) {
             // Error, something went wrong, tell someone, some how
             $err_msg .=  "<h2>&& $to failed &&</h2>";
             return $err_msg;
         }
-		//$email_response = wp_mail( $to, $subject, $content, $headers );
 
         $err_msg .=  "<h2> @ $first_name $last_name $email @ </h2>";
     }
