@@ -780,9 +780,9 @@ function wga_send_mailings_email($mailings_id) {
             $replace[] = $val;
             //echo "<h2> $col => $val </h2>";
         }
-        foreach($search as $key => $val) {
-            echo "<h2> search[$key]: $val </h2>";
-        }
+        $search[] = "$$"."site_url$$";
+        $replace[] = site_url();
+        //foreach($search as $key => $val) { echo "<h2> search[$key]: $val </h2>"; }
         $new_content = str_replace($search, $replace, $content);
 	
 	    $message = '<html>
