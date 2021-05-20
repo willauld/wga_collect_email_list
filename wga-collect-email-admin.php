@@ -262,7 +262,9 @@ function wga_insert_or_update_record($row_data) {
 	$updated_at = current_time( 'mysql' );
     //echo 'CREATED_AT ROW_DATA[6] '.  $row_data[6];
     //
-    // field index 10 is Update Record by ID
+    // field index 11 = 0 or blank 
+    // field index 11 = 1 is Update Record by ID
+    // field index 11 = 2 is Insert record as is, no changes or updates
     //
     $operation_control_field = $row_data[11];
     if ($operation_control_field == 1) {
@@ -329,6 +331,9 @@ function wga_insert_or_update_record($row_data) {
         //
         //echo 'INSERTING new record with no ID';
 		    $table_name = $wpdb->prefix . 'wga_contact_list';
+            if ($row_data[10] == '' | $row_data[10] == 0) {
+		        $row_data[10] = md5( rand(0,1000) ); // Generate random 32 character hash
+            }
 		    $wpdb->insert( 
 			    $table_name, 
 			    array( 
@@ -337,7 +342,7 @@ function wga_insert_or_update_record($row_data) {
 				'email' => $row_data[3],
                 'source' => $row_data[4],
                 'unsubscribed' => $row_data[5],
-                'created_at' => date("Y-m-d H:i:s", strtotime($row_data[6])),
+                'created_at' => $updated_at,
 				'updated_at' => $updated_at,
                 'is_verified' => $row_data[8],
 				'is_spam' => $row_data[9], 
